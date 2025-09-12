@@ -263,8 +263,8 @@ def generate_qiskit_qir_qubit_mapping(qiskit_circuit: QuantumCircuit, qiskit_bac
     Then we assign qiskit-qir index to the qiskit logic qubit idx.
 
     Args:
-        qiskit_circuit: Qiskit circuit to generate the mapping for.
-        qiskit_backend: Qiskit backend object to be used for qubit name generation.
+        qiskit_circuit: The Qiskit circuit to generate the mapping for.
+        qiskit_backend: The Qiskit backend object to be used for qubit name generation.
 
     Returns:
         A dictionary mapping Qiskit qubit indices to QIR qubit pointers.
