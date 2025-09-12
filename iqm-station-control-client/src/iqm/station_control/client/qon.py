@@ -292,7 +292,7 @@ class QONMetric(QON):
         "irb",
         "ssro",
         "restless_ssro",
-        "readout_rb",
+        "rrc",
         "qndness",
         "msmt_qndness",
         "npopex_echo",
