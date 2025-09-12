@@ -38,6 +38,9 @@ LOCUS_SEPARATOR: Final[str] = "__"
 Locus: TypeAlias = tuple[str, ...]
 """Sequence of QPU component physical names a quantum operation acts on. The order may matter."""
 
+Suffixes: TypeAlias = dict[str, str]
+"""Suffixes in a dut_field, split into key/value pairs."""
+
 
 def locus_to_locus_str(locus: Locus) -> str:
     """Convert a locus into a locus string."""
@@ -61,7 +64,7 @@ class UnknownObservationError(RuntimeError):
     """Observation name was syntactically correct but contained unknown elements."""
 
 
-def _parse_suffixes(suffixes: Iterable[str]) -> dict[str, str]:
+def _parse_suffixes(suffixes: Iterable[str]) -> Suffixes:
     """Parse the given suffixes and return them in a sorted dictionary."""
     suffix_dict = {}
     for suffix in suffixes:
@@ -227,7 +230,7 @@ class QONMetric(QON):
     """Sequence of names of QPU components on which the gate/operation is applied."""
     metric: str
     """Measured metric."""
-    suffixes: dict[str, str] = field(default_factory=dict)
+    suffixes: Suffixes = field(default_factory=dict)
     """Suffixes defining the metric further (if any)."""
 
     @property
@@ -366,7 +369,7 @@ class QONGateParam(QON):
         )
 
 
-def _split_obs_name(obs_name: str) -> tuple[list[str], dict[str, Any]]:
+def _split_obs_name(obs_name: str) -> tuple[list[str], Suffixes]:
     """Split the given observation name into path elements and suffixes."""
     # some observation names may have suffixes, split them off
     fragments = obs_name.split(_SUFFIX_SEPARATOR)
@@ -375,6 +378,19 @@ def _split_obs_name(obs_name: str) -> tuple[list[str], dict[str, Any]]:
     # split the path elements
     path = fragments[0].split(_FIELD_SEPARATOR)
     return path, suffixes
+
+
+def _convert_to_float(value: Any) -> float:
+    """Attempt to convert the given value to float.
+
+    Raises:
+        ValueError: Conversion not possible.
+
+    """
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Cannot convert value to float: {type(value)}") from e
 
 
 GATE_FIDELITY_METHODS = {
@@ -406,8 +422,8 @@ class ObservationFinder(dict):
     """
 
     def __init__(self, observations: Iterable[ObservationBase], skip_unparseable: bool = False):
-        def parse_observation_into_dict(name: str, dictionary: dict[str, Any]) -> tuple[dict[str, Any], str]:
-            """Insert the given observation name, split into path elements, into a nested dictionary.
+        def parse_observation_into_dict(name: str, dictionary: dict[str, Any]) -> tuple[dict[str, Any], str, Suffixes]:
+            """Help insert the given observation name, split into path elements, into a nested dictionary.
 
             The returned values allow the caller to insert whatever they want under the last path element
             of ``name`` in the nested dict.
@@ -417,7 +433,8 @@ class ObservationFinder(dict):
                 dictionary: Nested dictionary in which the path elements of ``name`` are inserted.
 
             Returns:
-                The dict corresponding to the second-last path element of ``name``, last path element of ``name``.
+                The dict corresponding to the second-last path element of ``name``, last path element of ``name``,
+                suffixes in ``name``.
 
             Raises:
                 ValueError: Failed to parse ``name`` because it was syntactically incorrect.
@@ -443,12 +460,20 @@ class ObservationFinder(dict):
                     raise UnknownObservationError("Unknown observation domain.")
             for path_element in path[:-1]:
                 dictionary = dictionary.setdefault(path_element, {})
-            return dictionary, path[-1]
+            return dictionary, path[-1], suffixes
 
         for obs in observations:
             try:
-                last_dict, last_element = parse_observation_into_dict(obs.dut_field, self)
-                last_dict[last_element] = obs
+                last_dict, last_element, _ = parse_observation_into_dict(obs.dut_field, self)
+                # TODO how to handle suffixes?
+                if (existing_obs := last_dict.get(last_element)) is not None:
+                    logger.warning(
+                        "Repeated observations: using %s, ignoring %s",
+                        existing_obs.dut_field,
+                        obs.dut_field,
+                    )
+                else:
+                    last_dict[last_element] = obs
             except (ValueError, UnknownObservationError) as err:
                 message = f"{obs.dut_field}: {err}"
                 if skip_unparseable:
@@ -503,8 +528,8 @@ class ObservationFinder(dict):
                             pass  # skip this key if conversion fails
         return result
 
-    def _get_path_value(self, path: Iterable[str]) -> float:
-        """Follow ``path``, return the final value."""
+    def _follow_path(self, path: Iterable[str]) -> dict[str, Any] | ObservationBase:
+        """Follow ``path``, return the final node/value."""
         node: dict[str, Any] | ObservationBase = self
         for step in path:
             if isinstance(node, ObservationBase):
@@ -513,25 +538,18 @@ class ObservationFinder(dict):
             if next_node is None:
                 raise KeyError(f"path step '{step}' could not be found")
             node = next_node
+        return node
 
+    def _get_path_value(self, path: Iterable[str]) -> float:
+        """Follow ``path``, return the final value."""
+        node = self._follow_path(path)
         if not isinstance(node, ObservationBase):
             raise KeyError(f"path {path} does not end in an observation")
-
-        try:
-            return float(node.value)  # type: ignore[arg-type]
-        except (ValueError, TypeError) as e:
-            raise ValueError(f"Cannot convert value to float: {type(node.value)}") from e
+        return _convert_to_float(node.value)
 
     def _get_path_node(self, path: Iterable[str]) -> dict[str, Any]:
         """Follow ``path``, return the final node."""
-        node: dict[str, Any] | ObservationBase = self
-        for step in path:
-            if isinstance(node, ObservationBase):
-                raise KeyError(f"path step '{step}' could not be found")
-            next_node = node.get(step)
-            if next_node is None:
-                raise KeyError(f"path step '{step}' could not be found")
-            node = next_node
+        node = self._follow_path(path)
         if isinstance(node, ObservationBase):
             raise KeyError(f"path {path} does not end in a node")
         return node
@@ -577,14 +595,7 @@ class ObservationFinder(dict):
             node = self._get_path_node(["metrics", "ssro", gate_name, impl_name, locus_str])
             error_0_to_1 = node["error_0_to_1"].value
             error_1_to_0 = node["error_1_to_0"].value
-
-            def convert_to_float(value):
-                try:
-                    return float(value)  # type: ignore[arg-type]
-                except (ValueError, TypeError) as e:
-                    raise ValueError(f"Cannot convert value to float: {type(value)}") from e
-
-            return convert_to_float(error_0_to_1), convert_to_float(error_1_to_0)
+            return _convert_to_float(error_0_to_1), _convert_to_float(error_1_to_0)
         except KeyError:
             logger.warning("Missing errors for %s.%s.%s.", gate_name, impl_name, locus_str)
             return None
