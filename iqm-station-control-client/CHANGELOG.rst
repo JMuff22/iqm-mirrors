@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.17.0 (2025-08-20)
+===========================
+
+Features
+--------
+
+- add :meth:`ObservationFinder.get_qubit_frequency` to retrieve qubit frequencies.
+
 Version 9.16.0 (2025-08-20)
 ===========================
 

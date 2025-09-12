@@ -736,3 +736,11 @@ class ObservationFinder(dict):
         except KeyError:
             logger.warning("Missing errors for %s.%s.%s.", gate_name, impl_name, locus_str)
             return None
+
+    def get_qubit_frequency(self, qubit: str) -> float | None:
+        """Qubit drive frequency, or None if not found."""
+        try:
+            return self._get_path_value(["controllers", qubit, "drive", "frequency"])
+        except KeyError:
+            logger.warning(f"Missing drive frequency for {qubit}.")
+            return None
