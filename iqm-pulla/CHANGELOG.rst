@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 8.2.0 (2025-07-02)
+==========================
+
+Bug fixes
+---------
+
+- Fix type errors raised by mypy.
+
 Version 8.1.0 (2025-06-18)
 ==========================
 
