@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: iqm-benchmarks
-Version: 2.46
+Version: 2.47
 Summary: A package for implementation of Quantum Characterization, Verification and Validation (QCVV) techniques on IQM's hardware at gate level abstraction
 Author-email: IQM Finland Oy <developers@meetiqm.com>, Adrian Auer <adrian.auer@meetiqm.com>, Raphael Brieger <raphael.brieger@meetiqm.com>, Alessio Calzona <alessio.calzona@meetiqm.com>, Pedro Figueroa Romero <pedro.romero@meetiqm.com>, Amin Hosseinkhani <amin.hosseinkhani@meetiqm.com>, Miikka Koistinen <miikka@meetiqm.com>, Nadia Milazzo <nadia.milazzo@meetiqm.com>, Vicente Pina Canelles <vicente.pina@meetiqm.com>, Aniket Rath <aniket.rath@meetiqm.com>, Jami Rönkkö <jami@meetiqm.com>, Stefan Seegerer <stefan.seegerer@meetiqm.com>
 Project-URL: Homepage, https://github.com/iqm-finland/iqm-benchmarks
@@ -18,8 +18,8 @@ Requires-Dist: mthree<2.7,>=2.6
 Requires-Dist: networkx<4.0,>=3.3
 Requires-Dist: rustworkx>=0.16.0
 Requires-Dist: numpy<2.0,>=1.25.2
-Requires-Dist: qiskit<1.3,>=1.2.4
-Requires-Dist: iqm-client[qiskit]<30.0,>=29.0
+Requires-Dist: qiskit<=1.4.2,>=1.2.4
+Requires-Dist: iqm-client[qiskit]<30.0,>=29.12
 Requires-Dist: iqm-station-control-client>=9.3.0
 Requires-Dist: requests<3.0,>=2.32.3
 Requires-Dist: scikit-optimize<0.11.0,>=0.10.2
