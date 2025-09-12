@@ -1,0 +1,38 @@
+# Temporary and binary files
+*~
+*.swp
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.png
+*.jpg
+*.jpeg
+*.pkl
+
+# Package files
+*.eggs/
+*.egg-info/
+*.egg-info/*
+
+# Environments
+/.tox/
+/.venv/
+
+# Build and docs folder/files
+/build/
+/dist/
+/sdist/
+/docs/api/
+version.txt
+
+# OS generated files
+**/.DS_Store
+
+.idea/*
+
+/Outputs/
+/tests/Outputs/
+docs/examples/Outputs/*
+
+# Exceptions
+!logo.png
