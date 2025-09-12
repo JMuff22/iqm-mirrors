@@ -29,4 +29,6 @@ intersphinx_mapping.update({
 	"iqm.qaoa": ("https://docs.meetiqm.com/iqm-qaoa/#qaoa", "https://docs.meetiqm.com/iqm-qaoa/objects.inv"),
 })
 
-extlinks = {}
+extlinks = {
+    'issue': ('#%s', 'issue %s'),
+}

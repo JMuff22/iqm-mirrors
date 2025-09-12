@@ -47,5 +47,6 @@ jobs:
         run: python pypi_mirror.py packages.txt .
 
       - name: Push changes and tags
-        # The --follow-tags flag ensures that any new tags created by the script are pushed.
-        run: git push origin main --follow-tags
+        run: |
+          git push origin main
+          git push origin --tags
