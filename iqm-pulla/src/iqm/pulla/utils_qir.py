@@ -39,7 +39,7 @@ from qiskit.providers import BackendV2
 
 from iqm.cpc.compiler.compiler import Compiler
 from iqm.cpc.interface.compiler import Circuit as CPC_Circuit
-from iqm.pulse.builder import CircuitOperation
+from iqm.pulse import CircuitOperation
 
 qir_logger = logging.getLogger(__name__)
 

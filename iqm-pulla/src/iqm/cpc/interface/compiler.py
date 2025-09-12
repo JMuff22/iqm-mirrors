@@ -19,19 +19,9 @@ from enum import StrEnum
 from typing import TypeAlias
 
 from exa.common.data.setting_node import SettingNode
-from iqm.pulse.builder import CircuitOperation, Locus
+from iqm.pulse import Circuit
+from iqm.pulse.builder import Locus
 from iqm.pulse.playlist.playlist import Playlist
-
-
-@dataclass
-class Circuit:
-    """Quantum circuit to be executed."""
-
-    name: str
-    """name of the circuit"""
-    instructions: tuple[CircuitOperation, ...]
-    """operations comprising the circuit"""
-
 
 CircuitBatch: TypeAlias = list[Circuit]
 """Type that represents a list of quantum circuits to be executed together in a single batch."""

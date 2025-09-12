@@ -1,5 +1,5 @@
 iqm-exa-common>=26,<27
 iqm-station-control-client>=9,<10
-iqm-pulse>=11,<12
-iqm-client[qiskit]>=30,<31
-iqm-client>=30,<31
+iqm-pulse>=12,<13
+iqm-client>=31,<32
+iqm-client[qiskit]>=31,<32

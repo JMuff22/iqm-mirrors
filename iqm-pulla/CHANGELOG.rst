@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 11.0.0 (2025-09-11)
+===========================
+
+Breaking changes
+----------------
+
+- Replace :class:`iqm.cpc.interface.compiler.Circuit` with :class:`iqm.pulse.Circuit`.
+  :issue:`SW-1663`
+- Remove ``Instruction`` and ``Circuit`` models from ``iqm.pulla.interface``. :issue:`SW-1663`
+
 Version 10.1.0 (2025-09-08)
 ===========================
 
