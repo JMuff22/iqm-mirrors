@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 29.4.0 (2025-07-07)
+===========================
+
+Features
+--------
+
+- Bugfix: Fixed the iqm-client cirq documentation such that the instruction is to route circuits before decomposing.
+
 Version 29.3.0 (2025-07-02)
 ===========================
 
