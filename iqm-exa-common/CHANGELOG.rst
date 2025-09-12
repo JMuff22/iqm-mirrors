@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 26.3 (2025-03-05)
+=========================
+
+Features
+--------
+
+- Add new error classes designed for client-server communication via station control client.
+- Remove general RequestError and use new specific error classes instead.
+
 Version 26.2 (2025-03-03)
 =========================
 

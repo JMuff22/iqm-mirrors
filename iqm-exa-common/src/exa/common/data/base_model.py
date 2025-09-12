@@ -11,12 +11,9 @@ class BaseModel(pydantic.BaseModel):
     """
 
     model_config = ConfigDict(
-        # extra="forbid",  # Forbid any extra attributes
-        # TODO (Marko): Use "ignore" at least temporarily
-        #  Data sent by old server code might include extra attributes like "parent_name",
-        #  which fails with a new client using extra="ignore".
-        #  Before merging to master, consider if we want to be strict with extra="forbid",
-        #  or would it be better to use extra="ignore" (shouldn't be needed if we update the server code anyway).
+        # TODO: Consider setting extra="forbid", extra="ignore" is needed only if new clients use older servers
+        #  After station control API versioning, backwards compatibility works, i.e. old clients can use newer servers.
+        #  Reverse shouldn't be needed, since we don't promise any forwards compatibility.
         extra="ignore",  # Ignore any extra attributes
         validate_assignment=True,  # Validate the data when the model is changed
         validate_default=True,  # Validate default values during validation

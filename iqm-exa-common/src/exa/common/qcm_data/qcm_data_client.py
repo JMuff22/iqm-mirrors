@@ -24,7 +24,8 @@ from typing import Any
 from packaging.version import Version
 import requests
 
-from exa.common.errors.exa_error import ExaError, RequestError
+from exa.common.errors.exa_error import ExaError
+from exa.common.errors.server_errors import NotFoundError, ValidationError
 from exa.common.qcm_data.file_adapter import FileAdapter
 
 MIN_SUPPORTED_CONTENT_FORMAT_VERSION = Version("1.0")
@@ -70,10 +71,7 @@ class QCMDataClient:
 
     @root_url.setter
     def root_url(self, root_url: str) -> None:
-        """Sets the remote QCM Data service URL.
-
-        Cache for :func:`get_chad` has to be reset when the URL changes.
-        """
+        """Sets the remote QCM Data service URL."""
         if self._root_url != root_url:
             self._root_url = root_url
 
@@ -90,14 +88,14 @@ class QCMDataClient:
         url_tail = f"/cheddars/{chip_label}?target=in-house"
         try:
             response = self._send_request(self.session.get, f"{self.root_url}{url_tail}")
-        except RequestError as err:
+        except NotFoundError as err:
             if self._fallback_root_url:
                 response = self._send_request(self.session.get, f"{self._fallback_root_url}{url_tail}")
             else:
                 raise err
         data = response.json().get("data")
         if not data:
-            raise RequestError(f"Chip design record for {chip_label} does not contain data.")
+            raise ValidationError(f"Chip design record for {chip_label} does not contain data.")
         self._validate_chip_design_record(data, chip_label)
         return data
 
@@ -113,7 +111,7 @@ class QCMDataClient:
                 error_message = response_dict["detail"]
             except json.JSONDecodeError:
                 error_message = response.text
-            raise RequestError(f"{url} returned error code {response.status_code}: {error_message}")
+            raise NotFoundError(error_message)
         return response
 
     @staticmethod

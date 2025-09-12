@@ -43,7 +43,6 @@ Uncertainty = Annotated[
     WithJsonSchema(core_schema.any_schema()),
 ]
 
-# TODO (Marko): Consider if we want to rename these?
-#  We have "as" imports so seems like more descriptive name would be better.
+# TODO: Consider if we want to rename these permanently to avoid unnecessary "as" imports
 ObservationValue = Value
 ObservationUncertainty = Uncertainty

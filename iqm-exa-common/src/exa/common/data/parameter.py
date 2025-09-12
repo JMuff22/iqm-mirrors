@@ -70,7 +70,7 @@ import xarray as xr
 from exa.common.control.sweep.sweep_values import SweepValues
 from exa.common.data.base_model import BaseModel
 from exa.common.data.value import ObservationValue
-from exa.common.errors.exa_error import InvalidParameterValueError
+from exa.common.errors.server_errors import ValidationError
 
 CastType = str | list["CastType"] | None
 
@@ -225,9 +225,7 @@ class Parameter(BaseModel):
         )
         if self.element_indices is not None:
             if self.collection_type is not CollectionType.SCALAR:
-                raise InvalidParameterValueError(
-                    "Element-wise parameter must have CollectionType.SCALAR collection type."
-                )
+                raise ValidationError("Element-wise parameter must have 'CollectionType.SCALAR' collection type.")
 
             match self.element_indices:
                 case [_i, *_more_is] as idxs:
@@ -236,7 +234,7 @@ class Parameter(BaseModel):
                 case int(idx):
                     idxs = [idx]
                 case _:
-                    raise InvalidParameterValueError("element_indices must be one or more ints.")
+                    raise ValidationError("Parameter 'element_indices' must be one or more ints.")
             object.__setattr__(self, "element_indices", idxs)
 
             object.__setattr__(self, "_parent_name", self.name)
@@ -379,12 +377,12 @@ class Parameter(BaseModel):
             The element-wise parameter.
 
         Raises:
-            InvalidParameterValueError: If ``self`` is not collection-valued.
+            UnprocessableEntityError: If ``self`` is not collection-valued.
 
         """
         if self.collection_type is CollectionType.SCALAR:
-            raise InvalidParameterValueError(
-                "Cannot create an element-wise parameter from a parameter with CollectionType.SCALAR."
+            raise ValidationError(
+                "Cannot create an element-wise parameter from a parameter with 'CollectionType.SCALAR'."
             )
         return Parameter(
             name=self.name,
@@ -433,7 +431,7 @@ class Setting(BaseModel):
             # To avoid extra complexity, let Pydantic deal with the raw data and change the value in "after" validation.
             object.__setattr__(self, "value", self.parameter.collection_type.cast(self.value))
         if self.value is not None and not self.parameter.validate(self.value):
-            raise InvalidParameterValueError("Invalid value {} for parameter {}.".format(self.value, self.parameter))
+            raise ValidationError(f"Invalid value '{self.value}' for parameter '{self.parameter}'.")
         return self
 
     def update(self, value: ObservationValue) -> Setting:
