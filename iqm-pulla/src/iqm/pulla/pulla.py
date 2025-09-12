@@ -248,57 +248,57 @@ class Pulla:
             logger.info("Waiting for the job to finish...")
 
             while True:
-                sweep_data = self._station_control.get_sweep(job_id)
+                job_data = self._station_control.get_job(job_id)
                 sc_result = StationControlResult(sweep_id=job_id, task_id=job_id, status=TaskStatus.PENDING)
 
-                if sweep_data.job_status <= JobExecutorStatus.EXECUTION_STARTED:  # type: ignore[operator]
+                if job_data.job_status <= JobExecutorStatus.EXECUTION_STARTED:  # type: ignore[operator]
                     # Wait in the task queue while showing a progress bar
 
                     interrupted = self._station_control._wait_job_completion(str(job_id), get_progress_bar_callback())  # type: ignore[attr-defined]
                     if interrupted:
                         raise KeyboardInterrupt
+                else:
+                    # job is not in queue or executing, so we can query the sweep
+                    sweep_data = self._station_control.get_sweep(job_id)
+                    if job_data.job_status == JobExecutorStatus.READY:
+                        logger.info("Sweep status: %s", str(sweep_data.job_status))
 
-                elif sweep_data.job_status == JobExecutorStatus.READY:
-                    logger.info("Sweep status: %s", str(sweep_data.job_status))
+                        sc_result.status = TaskStatus.READY
+                        sc_result.result = map_sweep_results_to_logical_qubits(
+                            self._station_control.get_sweep_results(job_id),
+                            context["readout_mappings"],
+                            context["options"].heralding_mode,
+                        )
+                        sc_result.start_time = (
+                            sweep_data.begin_timestamp.isoformat() if sweep_data.begin_timestamp else None
+                        )
+                        sc_result.end_time = sweep_data.end_timestamp.isoformat() if sweep_data.end_timestamp else None
 
-                    sc_result.status = TaskStatus.READY
-                    sc_result.result = map_sweep_results_to_logical_qubits(
-                        self._station_control.get_sweep_results(job_id),
-                        context["readout_mappings"],
-                        context["options"].heralding_mode,
-                    )
-                    sc_result.start_time = (
-                        sweep_data.begin_timestamp.isoformat() if sweep_data.begin_timestamp else None
-                    )
-                    sc_result.end_time = sweep_data.end_timestamp.isoformat() if sweep_data.end_timestamp else None
+                        if verbose:
+                            # TODO: Consider using just 'logger.debug' here and remove 'verbose'
+                            logger.info(sc_result.result)
 
-                    if verbose:
-                        # TODO: Consider using just 'logger.debug' here and remove 'verbose'
-                        logger.info(sc_result.result)
+                        return sc_result
 
-                    return sc_result
+                    if job_data.job_status == JobExecutorStatus.FAILED:
+                        sc_result.status = TaskStatus.FAILED
+                        sc_result.start_time = (
+                            sweep_data.begin_timestamp.isoformat() if sweep_data.begin_timestamp else None
+                        )
+                        sc_result.end_time = sweep_data.end_timestamp.isoformat() if sweep_data.end_timestamp else None
+                        sc_result.message = str(job_data.job_error)
+                        logger.error("Submission failed! Error: %s", sc_result.message)
+                        return sc_result
 
-                elif sweep_data.job_status == JobExecutorStatus.FAILED:
-                    sc_result.status = TaskStatus.FAILED
-                    sc_result.start_time = (
-                        sweep_data.begin_timestamp.isoformat() if sweep_data.begin_timestamp else None
-                    )
-                    sc_result.end_time = sweep_data.end_timestamp.isoformat() if sweep_data.end_timestamp else None
-                    job = self._station_control.get_job(job_id)
-                    sc_result.message = job["job_error"]  # type: ignore[index]
-                    logger.error("Submission failed! Error: %s", sc_result.message)
-                    return sc_result
-
-                elif sweep_data.job_status == JobExecutorStatus.ABORTED:
-                    sc_result.status = TaskStatus.FAILED
-                    sc_result.start_time = (
-                        sweep_data.begin_timestamp.isoformat() if sweep_data.begin_timestamp else None
-                    )
-                    sc_result.end_time = sweep_data.end_timestamp.isoformat() if sweep_data.end_timestamp else None
-                    job = self._station_control.get_job(job_id)
-                    sc_result.message = job["job_error"]  # type: ignore[index]
-                    logger.error("Submission was revoked!")
-                    return sc_result
+                    if job_data.job_status == JobExecutorStatus.ABORTED:
+                        sc_result.status = TaskStatus.FAILED
+                        sc_result.start_time = (
+                            sweep_data.begin_timestamp.isoformat() if sweep_data.begin_timestamp else None
+                        )
+                        sc_result.end_time = sweep_data.end_timestamp.isoformat() if sweep_data.end_timestamp else None
+                        sc_result.message = str(job_data.job_error)
+                        logger.error("Submission was revoked!")
+                        return sc_result
 
                 time.sleep(1)
 

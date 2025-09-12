@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.8.0 (2025-08-21)
+==========================
+
+Bug fixes
+---------
+
+- FIx Pulla.execute crashing when there are jobs in the queue
+
 Version 9.7.0 (2025-08-20)
 ==========================
 

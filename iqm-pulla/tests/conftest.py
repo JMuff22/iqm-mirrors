@@ -105,6 +105,10 @@ def pulla_on_spark(request, monkeypatch):
             response = Response()
             response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
             return response
+        if args[0].startswith(f"{root_url}/station/jobs/"):
+            response = Response()
+            response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+            return response
 
         return HTTPResponse(404)
 
