@@ -68,7 +68,9 @@ _implementation_library: dict[str, dict[str, type[GateImplementation]]] = {
     "delay": {"wait": Delay},
     "measure": {
         "constant": Measure_Constant,
-        "constant_qnd": Measure_Constant,
+    },
+    "measure_fidelity": {
+        "constant": Measure_Constant,
         "shelved_constant": Shelved_Measure_Constant,
     },
     "prx": {
@@ -132,6 +134,13 @@ _quantum_ops_library = {
             0,
             ("key",),
             implementations=_implementation_library["measure"],
+            factorizable=True,
+        ),
+        QuantumOp(
+            "measure_fidelity",
+            0,
+            ("key",),
+            implementations=_implementation_library["measure_fidelity"],
             factorizable=True,
         ),
         QuantumOp(

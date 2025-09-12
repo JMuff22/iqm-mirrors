@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 11.0.0 (2025-09-08)
+===========================
+
+Features
+--------
+
+- Split the measure QuantumOp into measure (QND mid-circuit-measure) and measure_fidelity (terminal measure that might not be QND)
+
 Version 10.5.0 (2025-09-03)
 ===========================
 

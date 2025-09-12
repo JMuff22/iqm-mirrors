@@ -62,15 +62,9 @@ class Reset_Conditional(CompositeGate):
             for q in self.locus
             if "drive" in self.builder.component_channels[q] and q in self.builder.chip_topology.component_to_probe_line
         )
-        # try to get a qnd measurement, otherwise use default one
-        try:  # TODO: should the QND measurement be its own QuantumOp instead?
-            probe_timebox = self.build("measure", resettable, impl_name="constant_qnd").probe_timebox(  # type: ignore[attr-defined]
-                RESET_MEASUREMENT_KEY, feedback_key=RESET_FEEDBACK_KEY
-            )
-        except (ValueError, KeyError):
-            probe_timebox = self.build("measure", resettable).probe_timebox(  # type: ignore[attr-defined]
-                RESET_MEASUREMENT_KEY, feedback_key=RESET_FEEDBACK_KEY
-            )
+        probe_timebox = self.build("measure", resettable).probe_timebox(  # type: ignore[attr-defined]
+            RESET_MEASUREMENT_KEY, feedback_key=RESET_FEEDBACK_KEY
+        )
         virtual_channels = set()
         probes = set()
         resets = []
