@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 26.23.0 (2025-06-17)
+============================
+
+Features
+--------
+
+- Improve errors in :mod:`exa.common.src.exa.common.errors.station_control_errors`.
+
 Version 26.22.0 (2025-06-13)
 ============================
 
