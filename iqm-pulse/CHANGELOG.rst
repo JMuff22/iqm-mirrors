@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 10.3.0 (2025-08-11)
+===========================
+
+Feature
+-------
+
+- Added ``FluxPulse_SmoothConstant_SmoothConstant `` which automatically splits pulses into three parts: rise, Constant, and fall.
+- Changed Flux pulse argument ``parameter`` type to remove ignores all over the code.
+
 Version 10.2.0 (2025-08-08)
 ===========================
 

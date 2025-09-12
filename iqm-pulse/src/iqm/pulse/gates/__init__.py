@@ -42,6 +42,7 @@ from iqm.pulse.gates.cz import (
     CZ_Slepian_ACStarkCRF,
     CZ_Slepian_CRF,
     CZ_TruncatedGaussianSmoothedSquare,
+    FluxPulse_SmoothConstant_SmoothConstant,
     FluxPulseGate_CRF_CRF,
     FluxPulseGate_TGSS_CRF,
 )
@@ -98,6 +99,7 @@ _exposed_implementations: dict[str, type[GateImplementation]] = {
         CZ_Slepian,
         CZ_Slepian_CRF,
         CZ_CRF,
+        FluxPulse_SmoothConstant_SmoothConstant,
         CZ_TruncatedGaussianSmoothedSquare,
         FluxPulseGate_TGSS_CRF,
         FluxPulseGate_CRF_CRF,

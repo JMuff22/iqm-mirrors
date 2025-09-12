@@ -498,3 +498,95 @@ class CosineFall(Waveform):
 
     def _sample(self, sample_coords: np.ndarray) -> np.ndarray:
         return 0.5 - 0.5 * np.sin(np.pi * sample_coords)
+
+
+@dataclass(frozen=True)
+class CosineRiseFlex(Waveform):
+    r"""Cosine Rise waveform with an extra duration buffer.
+
+    The waveform is a piecewise function: |buffer|cosine rise|flat plateau|, where:
+    - buffer is a 'leftover' constant signal with amplitude = 0, with duration of duration - full_width
+    - cosine rise is a cosine rise pulse with a duration of rise_time
+    - flat plateau is a constant signal with amplitude = 1, with duration of full_width - rise_time
+
+    Args:
+        rise_time: rise time of the waveform
+        full_width: combined duration of the cosine rise time and the flat plateau
+
+    Raises:
+        ValueError: Error is raised if full_width or rise_time is more than duration
+
+    """
+
+    rise_time: float
+    full_width: float
+
+    def _sample(self, sample_coords: np.ndarray) -> np.ndarray:
+        flat_part_duration = np.abs(self.full_width) - np.abs(self.rise_time)
+        rise_time_duration = np.abs(self.rise_time)
+        dead_wait_time = 1 - np.abs(self.full_width)
+
+        if dead_wait_time >= 0:
+            return np.piecewise(
+                sample_coords,
+                [
+                    sample_coords <= 0.5 - flat_part_duration - rise_time_duration,
+                    sample_coords > 0.5 - flat_part_duration - rise_time_duration,
+                    sample_coords >= 0.5 - flat_part_duration,  # flat carry-over from the Constant
+                ],
+                [
+                    0,
+                    lambda oc: 0.5 - 0.5 * np.cos(np.pi / rise_time_duration * (oc - dead_wait_time + 0.5)),
+                    1,
+                ],
+            )
+        elif (flat_part_duration + dead_wait_time > 0) and (1 - rise_time_duration >= 0):
+            raise ValueError("Full width is more than duration")
+        else:
+            raise ValueError("Rise time is more than duration")
+
+
+@dataclass(frozen=True)
+class CosineFallFlex(Waveform):
+    r"""Cosine fall waveform with an extra duration buffer.
+
+    The waveform is a piecewise function: |flat plateau|cosine fall|buffer|, where:
+    - buffer is a 'leftover' constant signal with amplitude = 0, generally with duration of duration - full_width
+    - cosine fall is a cosine fall pulse with a duration of rise_time
+    - flat plateau is a constant signal with amplitude = 1, generally with duration of full_width - rise_time
+
+    Args:
+        rise_time: rise time of the waveform
+        full_width: combined duration of the cosine fall time and the flat plateau
+
+    Raises:
+        ValueError: Error is raised if full_width or rise_time is more than duration
+
+    """
+
+    rise_time: float
+    full_width: float
+
+    def _sample(self, sample_coords: np.ndarray) -> np.ndarray:
+        flat_part_duration = max(np.abs(self.full_width) - np.abs(self.rise_time), 0)
+        rise_time_duration = np.abs(self.rise_time)
+        dead_wait_time = 1 - flat_part_duration - rise_time_duration
+
+        if dead_wait_time >= 0:
+            return np.piecewise(
+                sample_coords,
+                [
+                    sample_coords <= -0.5 + flat_part_duration,  # flat corry-over from the Constant
+                    sample_coords > -0.5 + flat_part_duration,
+                    sample_coords >= -0.5 + flat_part_duration + rise_time_duration,
+                ],
+                [
+                    1,
+                    lambda oc: 0.5 + 0.5 * np.cos(np.pi / rise_time_duration * (oc - flat_part_duration + 0.5)),
+                    0,
+                ],
+            )
+        elif (flat_part_duration + dead_wait_time > 0) and (1 - rise_time_duration >= 0):
+            raise ValueError("Full width is more than duration")
+        else:
+            raise ValueError("Rise time is more than duration")
