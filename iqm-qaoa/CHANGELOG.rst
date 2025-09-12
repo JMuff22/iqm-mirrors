@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 1.9.0 (2025-07-21)
+==========================
+
+Features
+--------
+
+- Add a Jupyter notebook showing how one can control / influence which qubits on the QPU get selected for execution of the circuit.
+- Add input ``**kwargs`` to ``transpiled_circuit`` which get passed to the inner ``transpile`` call (from Qiskit).
+
 Version 1.8.0 (2025-07-09)
 ==========================
 
