@@ -66,7 +66,7 @@ class StartStopOptions(SweepOptions):
             data = self._generate_by_count(count)
         else:
             data = self._generate_by_count(self.count if self.count is not None else DEFAULT_COUNT)
-        return data
+        return data  # type: ignore[return-value]
 
     def _generate_by_count(self, count: int) -> SweepValues:
         return np.linspace(self.start, self.stop, count, endpoint=True).tolist()

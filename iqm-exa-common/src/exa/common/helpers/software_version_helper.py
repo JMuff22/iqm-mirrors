@@ -18,7 +18,7 @@ import os
 import platform
 import subprocess
 
-import pkg_resources
+import pkg_resources  # type:ignore[import-untyped]
 
 
 def _is_editable(pkg_name: str) -> bool:

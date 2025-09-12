@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# mypy: ignore-errors
+
 """Physical quantities and instrument settings.
 
 A basic data structure in EXA is the :class:`~exa.common.data.parameter.Parameter`, which represents

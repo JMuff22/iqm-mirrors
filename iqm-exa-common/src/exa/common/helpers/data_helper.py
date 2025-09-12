@@ -38,7 +38,7 @@ def add_data_array(ds: xr.Dataset, da: xr.DataArray, name: Hashable | None = Non
     """
     if name is None:
         if da.name is not None:
-            name = da.name
+            name = da.name  # type: ignore[assignment]
         else:
             raise ValueError("No name was given to the dataArray.")
     # Attributes of Dataset coordinates are dropped/replaced when adding a DataArray

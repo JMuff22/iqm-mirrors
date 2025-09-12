@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# mypy: ignore-errors
+
 """A tree-structured container for :class:`Settings <exa.common.data.parameter.Setting>`.
 
 The :class:`.SettingNode` class combines a bunch of Settings together.

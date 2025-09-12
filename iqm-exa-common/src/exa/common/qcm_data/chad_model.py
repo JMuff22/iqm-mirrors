@@ -168,7 +168,7 @@ class CHAD(ImmutableBaseModel):
         launchers = {launcher.name: launcher for launcher in self.components.launchers}
 
         component: Qubit | Coupler
-        for component in [*self.components.qubits, *self.components.couplers]:
+        for component in [*self.components.qubits, *self.components.couplers]:  # type:ignore[assignment]
             component_type = "qubit" if isinstance(component, Qubit) else "coupler"
             if component.name in component_names:
                 for connection in component.connections:
