@@ -248,6 +248,7 @@ def _build_readout_mappings(
     builder: ScheduleBuilder,
     measurement_mode: MeasurementMode,
     heralding_mode: HeraldingMode,
+    convert_terminal_measurements: bool,
 ) -> tuple[tuple[ReadoutMapping, ...], tuple[tuple[str, ...], ...]]:
     """Create a readout mapping for each circuit, add required measurement instructions.
 
@@ -264,6 +265,8 @@ def _build_readout_mappings(
         builder: schedule builder object, encapsulating station properties and gate calibration data
         measurement_mode: measurement mode to be used
         heralding_mode: type of heralding used
+        convert_terminal_measurements: whether to convert terminal measurements into the ``"measure_fidelity"``
+            operation.
 
     Returns:
         readout mappings, heralded components
@@ -323,13 +326,21 @@ def _build_readout_mappings(
                         final_measurements.append(inst)
                 eclipsed_qubits.update(inst.locus)
 
+            if convert_terminal_measurements:
+                final_measurements_name = "measure_fidelity"
+                for measurement in final_measurements:
+                    measurement.name = final_measurements_name
+            else:
+                final_measurements_name = "measure"
             # Add a single final measurement instruction for qubits that still need to be measured
             # (order does not matter). this measurement instruction is not reflected in circuit_metrics,
             # nor are the results returned by SC. NOTE we assume that iqm-pulse is clever enough to
             # combine the separate final measurement instructions into simultaneous ReadoutTriggers.
             if missing := final_components_to_measure - set(q for inst in final_measurements for q in inst.locus):
                 # TODO which implementation to use? Now we leave it to None.
-                c.instructions += (CircuitOperation("measure", tuple(missing), {"key": MEASUREMENT_MODE_KEY}),)
+                c.instructions += (
+                    CircuitOperation(final_measurements_name, tuple(missing), {"key": MEASUREMENT_MODE_KEY}),
+                )
 
             if heralding_mode != HeraldingMode.NONE:
                 # heralding must return results for the components used in the circuit, if they can be measured
@@ -591,7 +602,12 @@ def derive_readout_mappings(
 ) -> tuple[list[Circuit_], dict[str, Any]]:
     """Derive mapping between station acquisition labels and user's measurement keys."""
     readout_mappings, heralded_components = _build_readout_mappings(
-        circuits, tuple(circuit_metrics), builder, options.measurement_mode, options.heralding_mode
+        circuits,
+        tuple(circuit_metrics),
+        builder,
+        options.measurement_mode,
+        options.heralding_mode,
+        options.convert_terminal_measurements,
     )
     return list(circuits), {"readout_mappings": readout_mappings, "heralded_components": heralded_components}
 

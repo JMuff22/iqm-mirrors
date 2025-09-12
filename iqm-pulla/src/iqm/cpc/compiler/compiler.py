@@ -71,6 +71,7 @@ STANDARD_CIRCUIT_EXECUTION_OPTIONS_DICT = {
     "move_gate_frame_tracking": MoveGateFrameTrackingMode.FULL,
     "move_gate_validation": MoveGateValidationMode.STRICT,
     "active_reset_cycles": None,
+    "convert_terminal_measurements": True,
 }
 
 STANDARD_CIRCUIT_EXECUTION_OPTIONS = CircuitExecutionOptions(**STANDARD_CIRCUIT_EXECUTION_OPTIONS_DICT)  # type: ignore

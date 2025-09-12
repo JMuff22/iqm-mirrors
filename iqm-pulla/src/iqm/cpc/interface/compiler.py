@@ -178,6 +178,8 @@ class CircuitExecutionOptions:
     move_gate_validation: MoveGateValidationMode
     move_gate_frame_tracking: MoveGateFrameTrackingMode
     active_reset_cycles: int | None
+    convert_terminal_measurements: bool
+    """Iff True, convert terminal measurements to a non-QND, high-fidelity measurement."""
 
 
 ReadoutMapping: TypeAlias = dict[str, tuple[str, ...]]

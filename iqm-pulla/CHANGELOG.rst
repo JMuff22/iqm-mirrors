@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 10.0.0 (2025-09-08)
+===========================
+
+Features
+--------
+
+- Pulla compiler converts the terminal measurements into "measure_fidelity"
+  - new circuit execution option ``"convert_terminal_measurements"`` controls this behavior (by default ``True``)
+
 Version 9.9.0 (2025-09-03)
 ==========================
 
