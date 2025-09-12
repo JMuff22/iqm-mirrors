@@ -120,8 +120,8 @@ class PrxGateImplementation(GateImplementation):
 
         """
         box = self(angle=angle, phase=0)
-        box.label = f"Rx on {self.locus[0]}"
-        return box
+        box.label = f"Rx on {self.locus[0]}"  # type: ignore[union-attr]
+        return box  # type: ignore[return-value]
 
     def ry(self, angle: float) -> TimeBox:
         """Y rotation gate.
@@ -134,8 +134,8 @@ class PrxGateImplementation(GateImplementation):
 
         """
         box = self(angle=angle, phase=np.pi / 2)
-        box.label = f"Ry on {self.locus[0]}"
-        return box
+        box.label = f"Ry on {self.locus[0]}"  # type: ignore[union-attr]
+        return box  # type: ignore[return-value]
 
     def clifford(self, xy_gate: XYGate) -> TimeBox:
         """One-qubit XY Clifford gates.
@@ -197,12 +197,12 @@ class PRX_SinglePulse_GateImplementation(SinglePulseGate, PrxGateImplementation)
     duration being zero, the gate implementation will apply a ``Block(0)`` instruction to the qubit's drive channel.
     """
 
-    def _call(self, angle: float, phase: float = 0.0) -> TimeBox:
+    def _call(self, angle: float, phase: float = 0.0) -> TimeBox:  # type: ignore[override]
         scale, new_phase = _normalize_params(angle, phase)
         pulse = self.pulse.copy(
-            scale_i=scale * self.pulse.scale_i,
-            scale_q=scale * self.pulse.scale_q,
-            phase=self.pulse.phase + new_phase,
+            scale_i=scale * self.pulse.scale_i,  # type: ignore[attr-defined]
+            scale_q=scale * self.pulse.scale_q,  # type: ignore[attr-defined]
+            phase=self.pulse.phase + new_phase,  # type: ignore[attr-defined]
         )
         if self.pulse.duration > TOLERANCE:
             timebox = self.to_timebox(Schedule({self.channel: [pulse]}))
@@ -214,7 +214,7 @@ class PRX_SinglePulse_GateImplementation(SinglePulseGate, PrxGateImplementation)
     @property
     def iq_pulse(self) -> IQPulse:
         """Alias for ``self.pulse`` for backward compatibility"""
-        return self.pulse
+        return self.pulse  # type: ignore[return-value]
 
 
 class PRX_CustomWaveforms(PRX_SinglePulse_GateImplementation, CustomIQWaveforms):
@@ -317,12 +317,12 @@ class PRX_CustomWaveformsSX(PRX_SinglePulse_GateImplementation, CustomIQWaveform
             timebox = self.to_timebox(Schedule({self.channel: [pulse]}))
         elif np.isclose(new_angle, np.pi / 2, atol=1e-8):
             pulse = self.pulse.copy(
-                phase=self.pulse.phase + new_phase,
+                phase=self.pulse.phase + new_phase,  # type: ignore[attr-defined]
             )
             timebox = self.to_timebox(Schedule({self.channel: [pulse]}))
         elif np.isclose(new_angle, np.pi, atol=1e-8):
             pulse = self.pulse.copy(
-                phase=self.pulse.phase + new_phase,
+                phase=self.pulse.phase + new_phase,  # type: ignore[attr-defined]
             )
             timebox = self.to_timebox(Schedule({self.channel: [pulse, pulse]}))
         else:
@@ -332,12 +332,12 @@ class PRX_CustomWaveformsSX(PRX_SinglePulse_GateImplementation, CustomIQWaveform
             phase_1, phase_increment_1 = phase_transformation(rz_a, 0)
             phase_2, phase_increment_2 = phase_transformation(rz_b, rz_c)
             pulse_1 = self.pulse.copy(
-                phase=normalize_angle(self.pulse.phase + phase_1),
-                phase_increment=normalize_angle(self.pulse.phase_increment + phase_increment_1),
+                phase=normalize_angle(self.pulse.phase + phase_1),  # type: ignore[attr-defined]
+                phase_increment=normalize_angle(self.pulse.phase_increment + phase_increment_1),  # type: ignore[attr-defined]
             )
             pulse_2 = self.pulse.copy(
-                phase=normalize_angle(self.pulse.phase + phase_2),
-                phase_increment=normalize_angle(self.pulse.phase_increment + phase_increment_2),
+                phase=normalize_angle(self.pulse.phase + phase_2),  # type: ignore[attr-defined]
+                phase_increment=normalize_angle(self.pulse.phase_increment + phase_increment_2),  # type: ignore[attr-defined]
             )
             timebox = self.to_timebox(Schedule({self.channel: [pulse_1, pulse_2]}))
 
@@ -482,14 +482,14 @@ class ABC_Constant_smooth(PrxGateImplementation):
         params_for_stark["n_samples"] = max(
             int(round(params_for_stark["n_samples"] * (1 - 2 * params_for_stark["rise_time"]), 0)), 0
         )
-        self.main_waveform = self._main_pulse(**params_for_stark)
+        self.main_waveform = self._main_pulse(**params_for_stark)  # type: ignore[assignment]
 
         params_for_risefall["n_samples"] = int(
             round(params_for_risefall["n_samples"] * params_for_risefall["rise_time"], 0)
         )
 
-        self.fall_waveform = self._fall_pulse(**params_for_risefall)
-        self.rise_waveform = self._rise_pulse(**params_for_risefall)
+        self.fall_waveform = self._fall_pulse(**params_for_risefall)  # type: ignore[assignment]
+        self.rise_waveform = self._rise_pulse(**params_for_risefall)  # type: ignore[assignment]
 
         self.channel = drive_channel
         self.special_implementation = True  # DEBUG
@@ -513,7 +513,7 @@ class ABC_Constant_smooth(PrxGateImplementation):
 
         parameters["rise_time"] = Parameter("", "gate rise time", "s")
 
-        cls.parameters = {
+        cls.parameters = {  # type: ignore[assignment]
             "duration": Parameter("", "Gate duration", "s"),
         } | parameters
 

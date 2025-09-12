@@ -184,13 +184,13 @@ def _validate_operation(
     """
     if not overwrite and gate_name in operations:
         old = operations.get(gate_name)
-        same = _compare_operations(new_op, old)
+        same = _compare_operations(new_op, old)  # type: ignore[arg-type]
         if not same:
             raise ValueError(f"{gate_name} already registered with different parameters")
 
     if gate_name in _quantum_ops_library:
         default = _quantum_ops_library.get(gate_name)
-        same = _compare_operations(new_op, default)
+        same = _compare_operations(new_op, default)  # type: ignore[arg-type]
         if not same:
             raise ValueError(f"{gate_name} conflicts with a canonical operation in iqm-pulse")
 
@@ -198,7 +198,7 @@ def _validate_operation(
         if gate_name in operations and operations[gate_name].unitary is not None:
             unitary = operations[gate_name].unitary
         elif gate_name in _quantum_ops_library and _quantum_ops_library[gate_name].unitary is not None:
-            unitary = default.unitary
+            unitary = default.unitary  # type: ignore[union-attr]
         else:
             unitary = None
         new_op = replace(new_op, unitary=unitary)
@@ -239,9 +239,9 @@ def _register_gate(
         }
         if quantum_op_specs:
             new_kwargs |= quantum_op_specs
-            new_kwargs["params"] = tuple(new_kwargs.get("params", ()))
+            new_kwargs["params"] = tuple(new_kwargs.get("params", ()))  # type: ignore[arg-type]
 
-        new_op = QuantumOp(**new_kwargs)
+        new_op = QuantumOp(**new_kwargs)  # type: ignore[arg-type]  # type: ignore[arg-type]  # type: ignore[arg-type]  # type: ignore[arg-type]  # type: ignore[arg-type]  # type: ignore[arg-type]  # type: ignore[arg-type]
 
     return new_op
 
@@ -275,7 +275,7 @@ def _add_implementation(
     if not get_implementation_class(impl_class.__name__):
         expose_implementation(impl_class, overwrite)
 
-    return new_op
+    return new_op  # type: ignore[return-value]
 
 
 def _validate_implementation(

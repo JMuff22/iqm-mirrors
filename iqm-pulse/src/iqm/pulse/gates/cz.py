@@ -81,7 +81,7 @@ class FluxPulseGate(GateImplementation):
     """Flux pulse Waveform to be played in the qubit flux AWG."""
     root_parameters: dict[str, Parameter | Setting] = {
         "duration": Parameter("", "Gate duration", "s"),
-        "rz": {
+        "rz": {  # type: ignore[dict-item]
             "*": Parameter("", "Z rotation angle", "rad"),  # wildcard parameter
         },
     }
@@ -108,7 +108,7 @@ class FluxPulseGate(GateImplementation):
             flux_channel = builder.get_flux_channel(component_name)
             params = self.convert_calibration_data(
                 calibration_data[cal_node_name],
-                self.parameters[cal_node_name],
+                self.parameters[cal_node_name],  # type: ignore[arg-type]
                 builder.channels[flux_channel],
                 duration,
             )
@@ -266,7 +266,7 @@ class CouplerFluxPulseQubitACStarkPulseGate(GateImplementation):
 
     root_parameters: dict[str, Parameter | Setting] = {
         "duration": Parameter("", "Gate duration", "s"),
-        "rz": {
+        "rz": {  # type: ignore[dict-item]
             "*": Parameter("", "Z rotation angle", "rad"),
         },
     }
@@ -294,7 +294,7 @@ class CouplerFluxPulseQubitACStarkPulseGate(GateImplementation):
             flux_channel = builder.get_flux_channel(component_name)
             params = self.convert_calibration_data(
                 calibration_data[cal_node_name],
-                self.parameters[cal_node_name],
+                self.parameters[cal_node_name],  # type: ignore[arg-type]
                 builder.channels[flux_channel],
                 duration,
             )
@@ -312,7 +312,7 @@ class CouplerFluxPulseQubitACStarkPulseGate(GateImplementation):
             drive_channel = builder.get_drive_channel(component_name)
             params = self.convert_calibration_data(
                 calibration_data[cal_node_name],
-                self.parameters[cal_node_name],
+                self.parameters[cal_node_name],  # type: ignore[arg-type]
                 builder.channels[drive_channel],
                 duration,
             )

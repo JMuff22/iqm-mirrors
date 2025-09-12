@@ -169,7 +169,7 @@ class GateImplementation(abc.ABC):
         Inheriting classes may override this method if the default :meth:`__call__` caching (based on the args & kwargs
         in the signature) is sufficient. Any additional caching may also be implemented inside this function if needed.
         """
-        return NotImplementedError
+        return NotImplementedError  # type: ignore[return-value]
 
     def build(
         self, op_name: str, locus: Locus, impl_name: str | None = None, strict_locus: bool = False
@@ -452,7 +452,7 @@ class CustomIQWaveforms(GateImplementation):
                 if k not in cls.excluded_parameters
             }
             if cls.dependent_waves:
-                cls.parameters = root_parameters | parameters_i
+                cls.parameters = root_parameters | parameters_i  # type: ignore[assignment]
             else:
                 parameters_q = {
                     k: v

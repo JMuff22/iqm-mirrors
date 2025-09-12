@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.20.0 (2025-07-09)
+===========================
+
+Features
+--------
+
+- Enable mypy type checking in CI and add temporary type ignores to the source code. :issue:`SW-1615`
+
 Version 9.19.0 (2025-07-08)
 ===========================
 

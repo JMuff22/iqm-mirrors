@@ -144,7 +144,7 @@ class RZ_Virtual(GateImplementation):
         timebox.neighborhood_components[0] = set(self.locus)
         return timebox
 
-    parameters: dict[str, Parameter] = {}
+    parameters: dict[str, Parameter] = {}  # type: ignore[assignment]
 
     def duration_in_seconds(self) -> float:
         return self.duration
@@ -191,7 +191,7 @@ class RZ_ACStarkShift(GateImplementation):
         parameters["amplitude"] = Parameter("", "amplitude", "")
         parameters["phase_increment"] = Parameter("", "phase increment", "rad")
 
-        cls.parameters = {
+        cls.parameters = {  # type: ignore[assignment]
             "duration": Parameter("", "Gate duration", "s"),
         } | parameters
 
@@ -234,7 +234,7 @@ class RZ_ACStarkShift_CosineRiseFall(RZ_ACStarkShift, ac_stark_waveform=Modulate
     """AC stark pulse implemented as a modulated cosine rise fall pulse."""
 
 
-class RZ_ACStarkShift_smoothConstant(
+class RZ_ACStarkShift_smoothConstant(  # type: ignore[call-arg]  # type: ignore[call-arg]  # type: ignore[call-arg]
     Constant_PRX_with_smooth_rise_fall,
     rise_waveform=CosineRise,  # type:ignore[call-arg]
     main_waveform=Constant,  # type:ignore[call-arg]
@@ -260,8 +260,8 @@ class RZ_PRX_Composite(CompositeGate):
         prx = self.build("prx", self.locus)
         return TimeBox.composite(
             [
-                prx.ry(np.pi / 2),
-                prx.rx(angle),
-                prx.ry(-np.pi / 2),
+                prx.ry(np.pi / 2),  # type: ignore[attr-defined]
+                prx.rx(angle),  # type: ignore[attr-defined]
+                prx.ry(-np.pi / 2),  # type: ignore[attr-defined]
             ]
         )

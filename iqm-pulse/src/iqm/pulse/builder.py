@@ -407,7 +407,7 @@ class ScheduleBuilder:
 
         """
         probe_line = self.chip_topology.component_to_probe_line.get(feedback_qubit)
-        all_virtual_channels = self.get_virtual_feedback_channels(probe_line)
+        all_virtual_channels = self.get_virtual_feedback_channels(probe_line)  # type: ignore[arg-type]
         channel = next((c for c in all_virtual_channels if awg_name in c), None)
         if not channel:
             raise ValueError(f"AWG node {awg_name} does not support fast feedback from {probe_line}")
@@ -1151,7 +1151,7 @@ class ScheduleBuilder:
         components = box.neighborhood_components.get(0)
         if components is None:
             components = box.locus_components.copy()
-            for channel in box.atom:
+            for channel in box.atom:  # type: ignore[union-attr]
                 components.add(self._channel_to_component.get(channel, channel))
             box.neighborhood_components[0] = components
 
@@ -1322,7 +1322,7 @@ class ScheduleBuilder:
                 # so we use the instruction itself as a key, so that the class is checked too.
                 instr_id = hash(instr)
             except TypeError:
-                instr_id = instr.id
+                instr_id = instr.id  # type: ignore[attr-defined]
             if instr_id not in mapped_instructions.setdefault(channel_name, {}):
                 mapped = _map_instruction(instr)
                 idx = pl.channel_descriptions[channel_name].add_instruction(mapped)

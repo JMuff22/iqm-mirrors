@@ -104,7 +104,7 @@ class MOVE_CustomWaveforms(FluxPulseGate):
 
     root_parameters: dict[str, Parameter | Setting] = {
         "duration": Parameter("", "Gate duration", "s"),
-        "rz": {
+        "rz": {  # type: ignore[dict-item]
             "*": Parameter("", "Z rotation angle", "rad"),  # wildcard parameter
         },
         "detuning": Parameter("", "Qubit - resonator detuning", "Hz"),
