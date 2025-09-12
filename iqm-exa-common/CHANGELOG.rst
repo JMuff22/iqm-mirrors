@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 26.24.0 (2025-06-17)
+============================
+
+Bug fixes
+---------
+
+- Bump iqm-pulse dependency. No functional changes.
+
 Version 26.23.0 (2025-06-17)
 ============================
 
