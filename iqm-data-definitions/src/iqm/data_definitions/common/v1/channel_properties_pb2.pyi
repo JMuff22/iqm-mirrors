@@ -78,16 +78,21 @@ class ChannelProperties(google.protobuf.message.Message):
     INSTRUCTION_DURATION_GRANULARITY_FIELD_NUMBER: builtins.int
     INSTRUCTION_DURATION_MIN_FIELD_NUMBER: builtins.int
     COMPATIBLE_INSTRUCTIONS_FIELD_NUMBER: builtins.int
+    INSTRUCTION_DURATION_GRANULARITY_SAMPLES_FIELD_NUMBER: builtins.int
+    INSTRUCTION_DURATION_MIN_SAMPLES_FIELD_NUMBER: builtins.int
     sampling_rate: builtins.float
-    instruction_duration_granularity: builtins.float
     """sample rate of the instrument responsible for the channel (in Hz)"""
+    instruction_duration_granularity: builtins.float
+    """Unused"""
     instruction_duration_min: builtins.float
+    """Unused"""
+    instruction_duration_granularity_samples: builtins.int
     """all instruction durations on this channel must be multiples of this granularity (in samples)"""
+    instruction_duration_min_samples: builtins.int
+    """all instruction durations on this channel must at least this long (in samples)"""
     @property
     def compatible_instructions(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]:
-        """all instruction durations on this channel must at least this long (in samples)
-        instruction types that are allowed on this channel
-        """
+        """instruction types that are allowed on this channel"""
 
     def __init__(
         self,
@@ -96,8 +101,10 @@ class ChannelProperties(google.protobuf.message.Message):
         instruction_duration_granularity: builtins.float = ...,
         instruction_duration_min: builtins.float = ...,
         compatible_instructions: collections.abc.Iterable[builtins.str] | None = ...,
+        instruction_duration_granularity_samples: builtins.int = ...,
+        instruction_duration_min_samples: builtins.int = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["compatible_instructions", b"compatible_instructions", "instruction_duration_granularity", b"instruction_duration_granularity", "instruction_duration_min", b"instruction_duration_min", "sampling_rate", b"sampling_rate"]) -> None: ...
+    def ClearField(self, field_name: typing.Literal["compatible_instructions", b"compatible_instructions", "instruction_duration_granularity", b"instruction_duration_granularity", "instruction_duration_granularity_samples", b"instruction_duration_granularity_samples", "instruction_duration_min", b"instruction_duration_min", "instruction_duration_min_samples", b"instruction_duration_min_samples", "sampling_rate", b"sampling_rate"]) -> None: ...
 
 global___ChannelProperties = ChannelProperties
 

@@ -26,10 +26,10 @@ class ChannelProperties:
     sampling_rate: float
     """Sample rate of the instrument responsible for the channel (in Hz)."""
 
-    instruction_duration_granularity: float
+    instruction_duration_granularity: int
     """All instruction durations on this channel must be multiples of this granularity (in samples)."""
 
-    instruction_duration_min: float
+    instruction_duration_min: int
     """All instruction durations on this channel must at least this long (in samples)."""
 
     compatible_instructions: tuple[type[Instruction], ...] = field(default_factory=tuple)
