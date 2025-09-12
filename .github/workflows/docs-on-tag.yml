@@ -5,8 +5,7 @@ name: Build and Deploy Versioned Docs
 on:
   push:
     tags:
-      - '*/v*'
-      - '*/*'
+      - '**' # Push events to every tag including hierarchical tags like v1.0/beta
   
   # Allow manual triggering with a specific tag
   workflow_dispatch:
@@ -26,19 +25,52 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Determine Python version
+        id: python-version
+        run: |
+          # Use manual input tag if provided, otherwise use the pushed tag
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          
+          BASE_PACKAGE_NAME=$(echo "$TAG" | awk -F'/' '{print $1}')
+          VERSION=$(echo "$TAG" | awk -F'/' '{print $2}' | sed 's/^v//')
+          
+          echo "Package: $BASE_PACKAGE_NAME, Version: $VERSION"
+          
+          # Define Python version based on package and version
+          PYTHON_VERSION="3.11"  # Default
+          
+          # For iqm-client versions < 30.0, use Python 3.10
+          if [[ "$BASE_PACKAGE_NAME" == "iqm-client" ]]; then
+            if [[ $(echo "$VERSION 30.0" | awk '{print ($1 < $2)}') == 1 ]]; then
+              PYTHON_VERSION="3.10"
+            fi
+          fi
+          
+          # Add more version-specific rules as needed
+          # if [[ "$BASE_PACKAGE_NAME" == "other-package" && ... ]]; then
+          #   PYTHON_VERSION="3.9"
+          # fi
+          
+          echo "Using Python $PYTHON_VERSION for $BASE_PACKAGE_NAME v$VERSION"
+          echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+
       - name: Set up Python with uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ steps.python-version.outputs.python-version }}
           enable-cache: true
 
       - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-docs.txt') }}
+          key: ${{ runner.os }}-pip-py${{ steps.python-version.outputs.python-version }}-${{ hashFiles('requirements-docs.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-py${{ steps.python-version.outputs.python-version }}-
 
       - name: Install build dependencies
         run: |
