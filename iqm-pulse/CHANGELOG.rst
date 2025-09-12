@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 10.4.0 (2025-08-12)
+===========================
+
+Features
+--------
+
+- Allow deprecating quantum operations and/or their implementations while still preserving them in the quantum operation
+  library (the names of deprecated canonical operations are still reserved).
+
 Version 10.3.0 (2025-08-11)
 ===========================
 

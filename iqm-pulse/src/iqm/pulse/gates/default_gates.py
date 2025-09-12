@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
@@ -63,7 +63,7 @@ if TYPE_CHECKING:
     from iqm.pulse.gate_implementation import GateImplementation
 
 
-_default_implementations: dict[str, dict[str, type[GateImplementation]]] = {
+_implementation_library: dict[str, dict[str, type[GateImplementation]]] = {
     "barrier": {"": Barrier},
     "delay": {"wait": Delay},
     "measure": {
@@ -105,9 +105,11 @@ _default_implementations: dict[str, dict[str, type[GateImplementation]]] = {
     "reset_wait": {"reset_wait": Reset_Wait},
     "flux_multiplexer": {"sample_linear": FluxMultiplexer_SampleLinear},
 }
-"""Canonical implementation names for the canonical quantum operations.
-A collection of mappings between default implementation names and their GateImplementation classes,
-for different gates."""
+"""For each canonical quantum operation name, maps its canonical implementation implementation names
+to their GateImplementation classes.
+
+Canonical names are reserved, and the users cannot redefine them.
+"""
 
 _quantum_ops_library = {
     op.name: op
@@ -115,101 +117,113 @@ _quantum_ops_library = {
         QuantumOp(
             "barrier",
             0,
-            implementations=_default_implementations["barrier"],  # type: ignore[arg-type]
+            implementations=_implementation_library["barrier"],
             symmetric=True,
         ),
         QuantumOp(
             "delay",
             0,
             ("duration",),
-            implementations=_default_implementations["delay"],  # type: ignore[arg-type]
+            implementations=_implementation_library["delay"],
             symmetric=True,
         ),
         QuantumOp(
             "measure",
             0,
             ("key",),
-            implementations=_default_implementations["measure"],  # type: ignore[arg-type]
+            implementations=_implementation_library["measure"],
             factorizable=True,
         ),
         QuantumOp(
             "prx",
             1,
             ("angle", "phase"),
-            implementations=_default_implementations["prx"],  # type: ignore[arg-type]
+            implementations=_implementation_library["prx"],
             unitary=get_unitary_prx,
         ),
         QuantumOp(
             "prx_12",
             1,
             ("angle", "phase"),
-            implementations=_default_implementations["prx_12"],  # type: ignore[arg-type]
+            implementations=_implementation_library["prx_12"],
         ),
         QuantumOp(
             "u",
             1,
             ("theta", "phi", "lam"),
-            implementations=_default_implementations["u"],  # type: ignore[arg-type]
+            implementations=_implementation_library["u"],
             unitary=get_unitary_u,
         ),
         QuantumOp(
             "sx",
             1,
-            implementations=_default_implementations["sx"],  # type: ignore[arg-type]
+            implementations=_implementation_library["sx"],
             unitary=lambda: get_unitary_prx(np.pi / 2, 0),
         ),
         QuantumOp(
             "rz",
             1,
             ("angle",),
-            implementations=_default_implementations["rz"],  # type: ignore[arg-type]
+            implementations=_implementation_library["rz"],
             unitary=get_unitary_rz,
         ),
         QuantumOp(
             "rz_physical",
             1,
-            implementations=_default_implementations["rz_physical"],  # type: ignore[arg-type]
+            implementations=_implementation_library["rz_physical"],
         ),
         QuantumOp(
             "cz",
             2,
             (),
-            implementations=_default_implementations["cz"],  # type: ignore[arg-type]
+            implementations=_implementation_library["cz"],
             symmetric=True,
             unitary=lambda: np.diag([1.0, 1.0, 1.0, -1.0]),
         ),
         QuantumOp(
             "move",
             2,
-            implementations=_default_implementations["move"],  # type: ignore[arg-type]
+            implementations=_implementation_library["move"],
         ),
         QuantumOp(
             "cc_prx",
             1,
             ("angle", "phase", "feedback_qubit", "feedback_key"),
-            implementations=_default_implementations["cc_prx"],  # type: ignore[arg-type]
+            implementations=_implementation_library["cc_prx"],
         ),
         QuantumOp(
             "reset",
             0,
-            implementations=_default_implementations["reset"],  # type: ignore[arg-type]
+            implementations=_implementation_library["reset"],
             symmetric=True,
             factorizable=True,
         ),
         QuantumOp(
             "reset_wait",
             0,
-            implementations=_default_implementations["reset_wait"],  # type: ignore[arg-type]
+            implementations=_implementation_library["reset_wait"],
             symmetric=True,
             factorizable=True,
         ),
         QuantumOp(
             "flux_multiplexer",
             0,
-            implementations=_default_implementations["flux_multiplexer"],  # type: ignore[arg-type]
+            implementations=_implementation_library["flux_multiplexer"],
         ),
     ]
 }
-"""Library of the current canonical quantum operations provided by iqm-pulse."""
-# NOTE If a canonical operation is removed in the future, consider adding a second dict for former
-# canonical operations so that we retain information about them.
+"""Canonical quantum operations provided by iqm-pulse.
+
+Their names are reserved, and the users cannot redefine them.
+"""
+
+_deprecated_ops: Final[set[str]] = set()
+"""Names of canonical quantum operations that are deprecated.
+
+They are not included by default in ScheduleBuilder unless the user specifically requests them."""
+_deprecated_implementations: Final[dict[str, set[str]]] = {}
+"""For each canonical quantum operation name, canonical implementation names that are deprecated.
+
+They are not included by default in ScheduleBuilder unless the user specifically requests them."""
+# TODO: deprecate gaussian_smoothed_square and everything with the tgss waveform as that is considered inferior to crf.
+# TODO: deprecate PRX_drag_gaussian

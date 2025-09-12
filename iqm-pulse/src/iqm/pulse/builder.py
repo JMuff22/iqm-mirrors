@@ -45,7 +45,7 @@ from iqm.pulse.gate_implementation import (
     OpCalibrationDataTree,
 )
 from iqm.pulse.gates import _validate_implementation, get_implementation_class
-from iqm.pulse.gates.default_gates import _quantum_ops_library
+from iqm.pulse.gates.default_gates import _deprecated_implementations, _deprecated_ops, _quantum_ops_library
 from iqm.pulse.playlist.channel import ChannelProperties, ProbeChannelProperties
 from iqm.pulse.playlist.instructions import (
     AcquisitionMethod,
@@ -184,8 +184,12 @@ def validate_quantum_circuit(
 def build_quantum_ops(ops: dict[str, dict[str, Any]]) -> QuantumOpTable:
     """Builds the table of known quantum operations.
 
-    Hardcoded default native ops table is extended by the ones in ``ops``.
-    In case of name collisions, the content of ``ops`` takes priority over the defaults.
+    Hardcoded canonical ops table is extended by the ones in ``ops``.
+    In case of name collisions, the content of ``ops`` takes priority over the defaults,
+    with the following caveats:
+
+    * canonical implementation names cannot be redefined, and
+    * for canonical operations you can only change :attr:`implementations` and :attr:`defaults_for_locus`.
 
     Args:
         ops: Contents of the ``gate_definitions`` section defining
@@ -204,7 +208,23 @@ def build_quantum_ops(ops: dict[str, dict[str, Any]]) -> QuantumOpTable:
         ValueError: Operation attributes don't match defaults or are invalid.
 
     """
-    op_table = copy.deepcopy(_quantum_ops_library)
+    # build the table of native ops
+    op_table = {}
+    for op_name, op in _quantum_ops_library.items():
+        # filter out deprecated ops, unless requested by the user in ``ops``
+        if op_name in _deprecated_ops and op_name not in ops:
+            continue
+
+        new_op = copy.deepcopy(op)  # to prevent modifications to the hardcoded table
+        if (deprecated_impls := _deprecated_implementations.get(op_name)) is not None:
+            # filter out deprecated implementations
+            non_deprecated = {
+                impl_name: impl for impl_name, impl in op.implementations.items() if impl_name not in deprecated_impls
+            }
+            new_op = replace(op, implementations=non_deprecated)
+        op_table[op_name] = new_op
+
+    # add ops defined by the user
     for op_name, op_definition in ops.items():
         # prepare the implementations
         implementations: dict[str, type[GateImplementation]] = {}
@@ -236,9 +256,9 @@ def build_quantum_ops(ops: dict[str, dict[str, Any]]) -> QuantumOpTable:
                     f"appear in the implementations dict."
                 )
 
-        # prepare a new op, or modify the existing one
-        if (old_op := op_table.get(op_name)) is not None:
-            # known op: only some fields can be redefined, and they have been popped out already
+        if (old_op := _quantum_ops_library.get(op_name)) is not None:
+            # modify a canonical operation
+            # only some fields can be modified, and they have been popped out already from op_definition
             if op_definition:
                 # TODO this should be an error, but there are so many old experiment.yml files in use
                 # that still have the old syntax that being strict about this would be disruptive.
@@ -247,15 +267,17 @@ def build_quantum_ops(ops: dict[str, dict[str, Any]]) -> QuantumOpTable:
                     f"'{op_name}' is a canonical operation, which means the fields {set(op_definition)} "
                     "provided by the user may not be changed."
                 )
-            op_table[op_name] = replace(old_op, implementations=implementations, defaults_for_locus=defaults_for_locus)
+
+            op = replace(old_op, implementations=implementations, defaults_for_locus=defaults_for_locus)
         else:
-            # new op
-            op_table[op_name] = QuantumOp(
+            # entirely new quantum operation defined by the user
+            op = QuantumOp(
                 name=op_name,
                 implementations=implementations,
                 defaults_for_locus=defaults_for_locus,
                 **op_definition,
             )
+        op_table[op_name] = op
 
     return op_table
 

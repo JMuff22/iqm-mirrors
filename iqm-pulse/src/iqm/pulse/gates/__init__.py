@@ -46,7 +46,7 @@ from iqm.pulse.gates.cz import (
     FluxPulseGate_CRF_CRF,
     FluxPulseGate_TGSS_CRF,
 )
-from iqm.pulse.gates.default_gates import _default_implementations, _quantum_ops_library
+from iqm.pulse.gates.default_gates import _implementation_library, _quantum_ops_library
 from iqm.pulse.gates.delay import Delay
 from iqm.pulse.gates.flux_multiplexer import FluxMultiplexer_SampleLinear
 from iqm.pulse.gates.measure import Measure_Constant, Measure_Constant_Qnd, Shelved_Measure_Constant
@@ -157,7 +157,7 @@ def _validate_implementation(
         ValueError: A canonical implementation name is being redefined.
 
     """
-    default_implementations = _default_implementations.get(op_name, {})
+    default_implementations = _implementation_library.get(op_name, {})
 
     # check if the implementation name is canonical for this op
     if (impl_class := default_implementations.get(impl_name)) is not None:
