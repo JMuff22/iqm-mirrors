@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 10.2.0 (2025-08-08)
+===========================
+
+Features
+--------
+
+- Modifies typing of CircuitOperation to use Locus directly. No other functional changes.
+
 Version 10.1.0 (2025-07-18)
 ===========================
 

@@ -83,7 +83,7 @@ class CircuitOperation:
 
     name: str
     """name of the quantum operation"""
-    locus: tuple[str, ...]
+    locus: Locus
     """names of the information-bearing QPU components (qubits, computational resonators...) the operation acts on"""
     args: dict[str, Any] = field(default_factory=dict)
     """arguments for the operation"""
