@@ -224,12 +224,12 @@ from exa.common.qcm_data.chip_topology import sort_components
 logger = logging.getLogger(__name__)
 
 
-def _fix_path_recursive(node: SettingNode | dict, path: str) -> SettingNode | dict:
+def _fix_path_recursive(node: SettingNode, path: str) -> SettingNode:
     """Recursively travel the settings tree and fix the ``path``attribute (also aligns ``name``,
     based on the node type). Deep copies all the child nodes.
     """
-    settings = {}
-    subtrees = {}
+    settings: dict[str, Setting] = {}
+    subtrees: dict[str, SettingNode] = {}
     for key, setting in node.settings.items():
         child_path = f"{path}.{key}"
         update_dict = {"path": child_path}
@@ -305,8 +305,8 @@ class SettingNode(BaseModel):
         generate_paths: bool = True,
         **kwargs,
     ):
-        settings: dict[str, Any] = settings or {}
-        subtrees: dict[str, Any] = subtrees or {}
+        settings = settings or {}
+        subtrees = subtrees or {}
 
         for key, child in kwargs.items():
             if isinstance(child, Setting):
@@ -650,7 +650,7 @@ class SettingNode(BaseModel):
         append_lines(self, lines, [])
         print("\n", "\n".join(lines))
 
-    def __eq__(self, other: SettingNode):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, SettingNode) and (
             (self.name, self.settings, self.subtrees) == (other.name, other.settings, other.subtrees)
         )
@@ -708,9 +708,12 @@ class SettingNode(BaseModel):
             else:
                 self.settings[key] = self.settings[key].update(value)
 
-    def setting_with_path_name(self, setting: Setting) -> Setting:
+    def setting_with_path_name(self, setting: Setting) -> Setting | None:
         """Get a copy of a setting with its name replaced with the path name."""
-        return self.find_by_name(setting.name).with_path_name()
+        first_item = self.find_by_name(setting.name)
+        if isinstance(first_item, Setting):
+            return first_item.with_path_name()
+        return None
 
     def diff(self, other: SettingNode, *, path: str = "") -> list[str]:
         """Recursive diff between two SettingNodes.
@@ -888,7 +891,7 @@ class SettingNode(BaseModel):
             latest_node[fragment] = SettingNode(name=fragment, align_name=latest_node.align_name)
             latest_node = latest_node[fragment]
         # finally add the nodes
-        nodes_to_add = nodes.values() if isinstance(nodes, dict) else nodes
+        nodes_to_add: Iterable[Setting | Parameter | SettingNode] = nodes.values() if isinstance(nodes, dict) else nodes
         nodes_keys = list(nodes.keys()) if isinstance(nodes, dict) else []
         for idx, node in enumerate(nodes_to_add):
             key = nodes_keys[idx] if isinstance(nodes, dict) else node.name.split(".")[-1]
@@ -926,10 +929,7 @@ class SettingNode(BaseModel):
             ):
                 if isinstance(locus, str):
                     locus = locus.split("__")
-                if gate_settings.symmetric.value:
-                    loci = list(permutations(locus))
-                else:
-                    loci = [tuple(locus)]
+                loci = list(permutations(locus)) if gate_settings.symmetric.value else [tuple(locus)]
                 for permuted_locus in loci:
                     locus_str = "__".join(permuted_locus)
                     if locus_str in gate_settings[impl].override_default_for_loci.value:
@@ -987,7 +987,7 @@ class SettingNode(BaseModel):
             The locus node (string) paths corresponding to this gate.
 
         """
-        node_paths = []
+        node_paths: list[str] = []
         if "gates" not in self.children or gate not in self.gates.children:
             return node_paths
         if implementations is not None:
@@ -1034,7 +1034,7 @@ class SettingNode(BaseModel):
 
         raise ValueError(f"Locus {locus} cannot be found in the gate properties characterization settings.")
 
-    def _get_symmetric_loci(self, gate: str, implementation: str, locus: str) -> list[str]:
+    def _get_symmetric_loci(self, gate: str, implementation: str, locus: str | Iterable[str]) -> list[str]:
         if not isinstance(locus, str):
             if self.gate_definitions[gate][implementation].symmetric.value:
                 str_loci = ["__".join(sort_components(locus))]

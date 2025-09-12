@@ -65,7 +65,7 @@ class StartStopOptions(SweepOptions):
             count = 1 + math.ceil(abs(self.stop - self.start) / float(np.abs(self.step)))
             data = self._generate_by_count(count)
         else:
-            data = self._generate_by_count(self.count)
+            data = self._generate_by_count(self.count if self.count is not None else DEFAULT_COUNT)
         return data
 
     def _generate_by_count(self, count: int) -> SweepValues:

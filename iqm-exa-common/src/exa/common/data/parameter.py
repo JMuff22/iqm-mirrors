@@ -116,7 +116,7 @@ class DataType(IntEnum):
         else:
             return False
 
-    def _cast(self, value: str) -> Any:  # noqa: PLR0911
+    def _cast(self, value: str | None) -> Any:  # noqa: PLR0911
         if value is None:
             return None
         elif self in [DataType.FLOAT, DataType.NUMBER]:
@@ -238,13 +238,12 @@ class Parameter(BaseModel):
                     raise ValidationError("Parameter 'element_indices' must be one or more ints.")
             object.__setattr__(self, "element_indices", idxs)
             # there may be len(idxs) num of "__" separated indices at the end, remove those to get the parent name
-            parent_name = self.name.replace("__" + "__".join([str(idx) for idx in idxs]), "")
+            seperated_indices = "__".join([str(idx) for idx in idxs])
+            parent_name = self.name.replace("__" + seperated_indices, "")
             object.__setattr__(self, "_parent_name", parent_name)
             object.__setattr__(self, "_parent_label", self.label.replace(f" {idxs}", ""))
             object.__setattr__(self, "label", f"{self._parent_label} {idxs}")
-            name = self._parent_name
-            for index in idxs:
-                name += f"__{index}"
+            name = parent_name + "__" + seperated_indices
             object.__setattr__(self, "name", name)
 
     @property
@@ -272,7 +271,7 @@ class Parameter(BaseModel):
     def build_data_set(
         variables: list[tuple[Parameter, list[Any]]],
         data: tuple[Parameter, SweepValues],
-        attributes: dict[str, Any] = None,
+        attributes: dict[str, Any] | None = None,
         extra_variables: list[tuple[str, int]] | None = None,
     ):
         """Build an xarray Dataset, where the only DataArray is given by `results` and coordinates are given by
@@ -289,9 +288,9 @@ class Parameter(BaseModel):
              extra_variables: Valueless dimensions and their sizes.
 
         """
-        variable_names = []
-        variable_sizes = []
-        variable_data_arrays = {}
+        variable_names: list[str] = []
+        variable_sizes: list[int] = []
+        variable_data_arrays: dict[str, xr.DataArray] = {}
         for variable in variables:
             variable_names.append(variable[0].name)
             variable_sizes.append(len(variable[1]))
@@ -326,9 +325,9 @@ class Parameter(BaseModel):
     def build_data_array(
         self,
         data: np.ndarray,
-        dimensions: list[Hashable] = None,
-        coords: dict[Hashable, Any] = None,
-        metadata: dict[str, Any] = None,
+        dimensions: list[str] | list[Hashable] | None = None,
+        coords: dict[Hashable, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> xr.DataArray:
         """Attach Parameter information to a numerical array.
 
@@ -365,7 +364,7 @@ class Parameter(BaseModel):
         da = xr.DataArray(name=self.name, data=data, attrs=attrs, dims=dimensions, coords=coords)
         # copying the coordinate metadata, if present, to the new DataArray coordinates
         if coords:
-            for key in [k for k in coords.keys() if isinstance(coords[k], xr.DataArray)]:
+            for key in [k for k in coords if isinstance(coords[k], xr.DataArray)]:
                 da[key].attrs = coords[key].attrs
         return da
 
@@ -474,7 +473,7 @@ class Setting(BaseModel):
         return self.parameter.unit
 
     @property
-    def element_indices(self) -> tuple[int, ...] | None:
+    def element_indices(self) -> int | list[int] | None:
         """Element-wise indices of the parameter in ``self``."""
         return self.parameter.element_indices
 
@@ -483,15 +482,14 @@ class Setting(BaseModel):
         return next((setting for setting in values if setting.parameter.name == name), None)
 
     @staticmethod
-    def remove_by_name(name: str, values: set[Setting] = None) -> set[Setting]:
-        if values is None:
-            values = set()
+    def remove_by_name(name: str, values: set[Setting]) -> set[Setting]:
         removed = copy.deepcopy(values)
-        removed.discard(Setting.get_by_name(name, values))
+        if setting := Setting.get_by_name(name, values):
+            removed.discard(setting)
         return removed
 
     @staticmethod
-    def replace(settings: Setting | list[Setting], values: set[Setting] = None) -> set[Setting]:
+    def replace(settings: Setting | list[Setting], values: set[Setting] | None = None) -> set[Setting]:
         if values is None:
             values = set()
         if not isinstance(settings, list):
@@ -518,7 +516,7 @@ class Setting(BaseModel):
         diff = first.difference(second)
         for s in first.intersection(second):
             a, b = [Setting.get_by_name(s.parameter.name, group) for group in [first, second]]
-            if a.value != b.value:
+            if a is not None and b is not None and a.value != b.value:
                 diff.add(a)
         return diff
 
@@ -555,7 +553,7 @@ class Setting(BaseModel):
     def __hash__(self):
         return hash(self.parameter)
 
-    def __eq__(self, other: Setting):
+    def __eq__(self, other: Any) -> bool:
         if not (isinstance(other, Setting) and self.parameter == other.parameter):
             return False
         if isinstance(self.value, np.ndarray):

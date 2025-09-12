@@ -2,13 +2,13 @@
 Changelog
 =========
 
-Version 26.25.1 (2025-07-29)
+Version 26.26.0 (2025-07-02)
 ============================
 
-Features
---------
+Bug fixes
+---------
 
-- Added log level to :class:`StationControlError`.
+- Fix type errors raised by mypy.
 
 Version 26.25.0 (2025-06-17)
 ============================
