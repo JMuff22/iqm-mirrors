@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.19.0 (2025-08-20)
+===========================
+
+Features
+--------
+
+- Update dependency on iqm-client
+
 Version 1.18.0 (2025-08-20)
 ===========================
 
