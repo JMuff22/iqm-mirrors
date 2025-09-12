@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 26.27.0 (2025-07-04)
+============================
+
+Features
+--------
+
+- Setting now has a private field _source and an associated property which can be used to store e.g. the observation that is the source of the Setting's value.
+
 Version 26.26.0 (2025-07-02)
 ============================
 

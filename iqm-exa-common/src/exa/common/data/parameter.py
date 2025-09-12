@@ -61,7 +61,7 @@ import ast
 from collections.abc import Hashable
 import copy
 from enum import IntEnum
-from typing import Any, Self
+from typing import Any, Self, TypeAlias
 import warnings
 
 import numpy as np
@@ -73,7 +73,9 @@ from exa.common.data.base_model import BaseModel
 from exa.common.data.value import ObservationValue
 from exa.common.errors.station_control_errors import ValidationError
 
-CastType = str | list["CastType"] | None
+CastType: TypeAlias = str | list["CastType"] | None
+SourceType: TypeAlias = None | BaseModel | dict[str, Any]
+"""Type for Setting sources."""
 
 
 class DataType(IntEnum):
@@ -135,7 +137,7 @@ class DataType(IntEnum):
             raise TypeError("Boolean data types can only be 'false', 'true, '0' or '1' (case-insensitive)")
         elif self is DataType.STRING:
             return value
-        else:
+        else:  # TODO: can this be removed?
             try:
                 return ast.literal_eval(value)
             except (SyntaxError, ValueError):  # if the value can not be evaluated, return the original value
@@ -407,12 +409,19 @@ class Setting(BaseModel):
     path: str = ""
     """Path in the settings tree (starting from the root ``SettingNode``) for this setting."""
 
+    _source: SourceType = None
+    """The source for this Setting value. May contain an observation (ObservationDefinition or ObservationData)
+    or a source-dict (e.g. ``{"type": "configuration_source", "configurator": "defaults_from_yml"}``). By default,
+    ``None``, which denotes the source not being specified (e.g. hardcoded defaults). The source is stored in a private
+    attribute and thus is never serialized (the source field can contain non-serializable data such as Callables)."""
+
     def __init__(
         self,
         parameter: Parameter | None = None,
         value: ObservationValue | None = None,
         read_only: bool = False,
         path: str = "",
+        source: SourceType = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -422,6 +431,7 @@ class Setting(BaseModel):
             path=path,
             **kwargs,
         )
+        self._source = source
 
     @model_validator(mode="after")
     def validate_parameter_value_after(self) -> Self:
@@ -435,8 +445,17 @@ class Setting(BaseModel):
             raise ValidationError(f"Invalid value '{self.value}' for parameter '{self.parameter}'.")
         return self
 
-    def update(self, value: ObservationValue) -> Setting:
-        """Create a new setting object with updated `value`."""
+    def update(self, value: ObservationValue, source: SourceType = None) -> Setting:
+        """Create a new setting object with updated value and source.
+
+        Args:
+            value: New value for the setting.
+            source: New source for the setting.
+
+        Returns:
+            Copy of ``self`` with modified properties.
+
+        """
         if self.read_only:
             raise ValueError(
                 f"Can't update the value of {self.parameter.name} to {value} since the setting is read-only."
@@ -445,7 +464,7 @@ class Setting(BaseModel):
             value = np.array(value)
         # Need to create a new Setting here instead of using Pydantic model_copy().
         # model_copy() can't handle backdoor settings without errors, i.e. values with a list of 2 elements.
-        return Setting(self.parameter, value, self.read_only, self.path)
+        return Setting(self.parameter, value, self.read_only, self.path, source=source)
 
     @property
     def name(self):
@@ -476,6 +495,11 @@ class Setting(BaseModel):
     def element_indices(self) -> int | list[int] | None:
         """Element-wise indices of the parameter in ``self``."""
         return self.parameter.element_indices
+
+    @property
+    def source(self) -> SourceType:
+        """Return the source for this Setting's value."""
+        return self._source
 
     @staticmethod
     def get_by_name(name: str, values: set[Setting]) -> Setting | None:
