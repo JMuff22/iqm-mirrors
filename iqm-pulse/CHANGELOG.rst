@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.21.0 (2025-07-10)
+===========================
+
+Bug fixes
+---------
+
+- Fix instructions with same field names being treated as equal in building the playlist
+
 Version 9.20.0 (2025-07-09)
 ===========================
 

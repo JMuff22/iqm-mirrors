@@ -1311,7 +1311,7 @@ class ScheduleBuilder:
         }
 
         pl = Playlist()
-        mapped_instructions: dict[str, dict[int, Any]] = {}
+        mapped_instructions: dict[str, dict[int | Instruction, Any]] = {}
 
         def _append_to_schedule(sc_schedule: SC_Schedule, channel_name: str, instr: Instruction) -> None:
             """Append ``instr`` to ``sc_schedule`` into the channel``channel_name``."""
@@ -1320,10 +1320,12 @@ class ScheduleBuilder:
                 # 2 dataclasses can have the same hash if their fields are identical. We must
                 # distinguish between different Waveform classes which may have identical fields,
                 # so we use the instruction itself as a key, so that the class is checked too.
-                instr_id = hash(instr)
+                instr_id = instr  # type: ignore[attr-defined]
+                is_mapped = instr_id in mapped_instructions.setdefault(channel_name, {})
             except TypeError:
                 instr_id = instr.id  # type: ignore[attr-defined]
-            if instr_id not in mapped_instructions.setdefault(channel_name, {}):
+                is_mapped = instr_id in mapped_instructions.setdefault(channel_name, {})
+            if not is_mapped:
                 mapped = _map_instruction(instr)
                 idx = pl.channel_descriptions[channel_name].add_instruction(mapped)
                 sc_schedule.instructions.setdefault(channel_name, []).append(idx)
