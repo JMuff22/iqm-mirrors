@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.4.0 (2025-08-07)
+==========================
+
+Features
+--------
+
+- Fix naming conventions related to Pulse level access as ``Pulla``.
+
 Version 9.3.0 (2025-08-05)
 ==========================
 
