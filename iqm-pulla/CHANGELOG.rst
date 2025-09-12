@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.5.0 (2025-08-11)
+==========================
+
+Feature
+-------
+
+- bump exa-experiments and iqm-pulse
+
 Version 9.4.0 (2025-08-07)
 ==========================
 
