@@ -35,7 +35,7 @@ from iqm.pulse.gates.cz import (
 from iqm.pulse.gates.delay import Delay
 from iqm.pulse.gates.flux_multiplexer import FluxMultiplexer_SampleLinear
 from iqm.pulse.gates.measure import Measure_Constant, Shelved_Measure_Constant
-from iqm.pulse.gates.move import MOVE_CRF_CRF, MOVE_TGSS_CRF
+from iqm.pulse.gates.move import MOVE_CRF_CRF, MOVE_SLEPIAN_CRF, MOVE_TGSS_CRF
 from iqm.pulse.gates.prx import (
     PRX_DRAGCosineRiseFall,
     PRX_DRAGCosineRiseFallSX,
@@ -89,7 +89,7 @@ _default_implementations = {
         "crf_acstarkcrf": CZ_CRF_ACStarkCRF,
         "slepian_acstarkcrf": CZ_Slepian_ACStarkCRF,
     },
-    "move": {"tgss_crf": MOVE_TGSS_CRF, "crf_crf": MOVE_CRF_CRF},
+    "move": {"tgss_crf": MOVE_TGSS_CRF, "crf_crf": MOVE_CRF_CRF, "slepian_crf": MOVE_SLEPIAN_CRF},
     "cc_prx": {
         "prx_composite": CCPRX_Composite,
         "prx_composite_drag_crf": CCPRX_Composite_DRAGCosineRiseFall,

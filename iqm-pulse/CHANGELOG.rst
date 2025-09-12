@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.18.0 (2025-07-02)
+===========================
+
+Features
+--------
+
+- Add new MOVE implementation :class:`MOVE_SLEPIAN_CRF`.
+
 Version 9.17.0 (2025-07-01)
 ===========================
 
