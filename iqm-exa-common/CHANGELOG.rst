@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 26.25.1 (2025-07-29)
+============================
+
+Features
+--------
+
+- Added log level to :class:`StationControlError`.
+
 Version 26.25.0 (2025-06-17)
 ============================
 
