@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 29.13.0 (2025-08-19)
+============================
+
+Bug fixes
+---------
+
+- Fix ``iqm-client[cirq]`` installation for all supported Python versions.
+
 Version 29.12.0 (2025-08-08)
 ============================
 
