@@ -11,13 +11,14 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from functools import lru_cache
-from typing import Self
+from typing import Any, Self
 
 import numpy as np
 
 from iqm.pulse.builder import CircuitOperation, build_quantum_ops
-from iqm.pulse.quantum_ops import QuantumOpTable
+from iqm.pulse.quantum_ops import QuantumOp, QuantumOpTable
 
 
 def reorder(A: np.ndarray, perm: list[int]) -> np.ndarray:
@@ -363,8 +364,15 @@ class CircuitOperationList(list):
         params = self.table[name].params
         if len(params) != len(args):
             raise TypeError(
-                f"Operation {name} has the following arguments: {params}, but {len(args)} values were provided."
+                f"Operation {name} has the following arguments: {tuple(params)}, but {len(args)} values were provided."
             )
+        # Convert int args to floats, so that one can pass e.g. 0 instead of 0.0 for the arg.
+        # Note that this conversion is not exact if the int value is too large, but such values are not realistic
+        # for the current parameter types.
+        args = tuple(
+            float(arg) if (float in param_types and int not in param_types) and isinstance(arg, int) else arg
+            for arg, param_types in zip(args, params.values())
+        )
         new_op = CircuitOperation(name=name, args=dict(zip(params, args)), implementation=impl_name, locus=locus)
         new_op.validate(self.table)
         self.append(new_op)
@@ -503,3 +511,55 @@ class CircuitOperationList(list):
             f" optionally to fix the implementation of the operation in iqm-pulse."
         )
         setattr(CircuitOperationList, name, _add_specific_op)
+
+
+@dataclass
+class Circuit:
+    """Quantum circuit.
+
+    Used e.g. for client-server communication.
+
+    Consists of a sequence of native quantum operations, each represented by an instance of the
+    :class:`CircuitOperation` class.
+    """
+
+    name: str
+    """name of the circuit"""
+    instructions: tuple[CircuitOperation, ...]
+    """operations comprising the circuit"""
+    metadata: dict[str, Any] | None = None
+    """optional metadata for the circuit"""
+
+    def all_locus_components(self) -> set[str]:
+        """Return the names of all locus components (typically qubits) in the circuit."""
+        components: set[str] = set()
+        for instruction in self.instructions:
+            components.update(instruction.locus)
+        return components
+
+    def validate(self, supported_operations: dict[str, QuantumOp]) -> None:
+        """Validate the circuit against the supported quantum operations.
+
+        Args:
+            supported_operations: mapping of supported quantum operation names to their definitions
+
+        Raises:
+            ValueError: circuit is not valid
+
+        """
+        self._validate_name()
+        self._validate_instructions(supported_operations)
+
+    def _validate_name(self) -> None:
+        if not self.name:
+            raise ValueError("A circuit should have a non-empty string for a name.")
+
+    def _validate_instructions(self, supported_operations: dict[str, QuantumOp]) -> None:
+        if not self.instructions:
+            raise ValueError("Each circuit should have at least one instruction.")
+
+        for instruction in self.instructions:
+            if isinstance(instruction, CircuitOperation):
+                instruction.validate(supported_operations)
+            else:
+                raise ValueError("Every instruction in a circuit should be of type <CircuitOperation>")

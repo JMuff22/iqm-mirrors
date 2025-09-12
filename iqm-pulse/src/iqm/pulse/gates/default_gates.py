@@ -125,41 +125,52 @@ _quantum_ops_library = {
         QuantumOp(
             "delay",
             0,
-            ("duration",),
+            {"duration": (float,)},
             implementations=_implementation_library["delay"],
             symmetric=True,
         ),
         QuantumOp(
             "measure",
             0,
-            ("key",),
+            {"key": (str,)},
+            optional_params={"feedback_key": (str,)},
             implementations=_implementation_library["measure"],
             factorizable=True,
         ),
         QuantumOp(
             "measure_fidelity",
             0,
-            ("key",),
+            {"key": (str,)},
             implementations=_implementation_library["measure_fidelity"],
             factorizable=True,
         ),
         QuantumOp(
             "prx",
             1,
-            ("angle", "phase"),
+            {
+                "angle": (float,),
+                "phase": (float,),
+            },
             implementations=_implementation_library["prx"],
             unitary=get_unitary_prx,
         ),
         QuantumOp(
             "prx_12",
             1,
-            ("angle", "phase"),
+            {
+                "angle": (float,),
+                "phase": (float,),
+            },
             implementations=_implementation_library["prx_12"],
         ),
         QuantumOp(
             "u",
             1,
-            ("theta", "phi", "lam"),
+            {
+                "theta": (float,),
+                "phi": (float,),
+                "lam": (float,),
+            },
             implementations=_implementation_library["u"],
             unitary=get_unitary_u,
         ),
@@ -172,7 +183,7 @@ _quantum_ops_library = {
         QuantumOp(
             "rz",
             1,
-            ("angle",),
+            {"angle": (float,)},
             implementations=_implementation_library["rz"],
             unitary=get_unitary_rz,
         ),
@@ -184,7 +195,7 @@ _quantum_ops_library = {
         QuantumOp(
             "cz",
             2,
-            (),
+            {},
             implementations=_implementation_library["cz"],
             symmetric=True,
             unitary=lambda: np.diag([1.0, 1.0, 1.0, -1.0]),
@@ -197,7 +208,12 @@ _quantum_ops_library = {
         QuantumOp(
             "cc_prx",
             1,
-            ("angle", "phase", "feedback_qubit", "feedback_key"),
+            {
+                "angle": (float,),
+                "phase": (float,),
+                "feedback_qubit": (str,),
+                "feedback_key": (str,),
+            },
             implementations=_implementation_library["cc_prx"],
         ),
         QuantumOp(

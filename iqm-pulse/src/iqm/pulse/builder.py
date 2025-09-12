@@ -80,7 +80,36 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CircuitOperation:
-    """Specific quantum operation applied on a specific part of the QPU, e.g. in a quantum circuit."""
+    r"""Specific quantum operation applied on a specific part of the QPU, e.g. in a quantum circuit.
+
+    We currently support the following native operations for circuit execution:
+
+    ================ =========== ======================================= ===========
+    name             # of qubits args                                    description
+    ================ =========== ======================================= ===========
+    measure          >= 1        ``key: str``, ``feedback_key: str``     Measurement in the Z basis.
+    prx              1           ``angle: float``, ``phase: float``      Phased x-rotation gate.
+    cc_prx           1           ``angle: float``, ``phase: float``,
+                                 ``feedback_qubit: str``,
+                                 ``feedback_key: str``                   Classically controlled PRX gate.
+    reset            >= 1                                                Reset the qubit(s) to :math:`|0\rangle`.
+    cz               2                                                   Controlled-Z gate.
+    move             2                                                   Move a qubit state between a qubit and a
+                                                                         computational resonator, as long as
+                                                                         at least one of the components is
+                                                                         in the :math:`|0\rangle` state.
+    barrier          >= 1                                                Execution barrier.
+    delay            >= 1        ``duration: float``                     Force a delay between circuit operations.
+    ================ =========== ======================================= ===========
+
+    For each CircuitOperation you may also optionally specify :attr:`implementation`,
+    which contains the name of an implementation of the operation to use.
+    Support for multiple implementations is currently experimental and in normal use the
+    field should be omitted, this selects the default implementation for the operation for that locus.
+
+    See the submodules under :mod:`iqm.pulse.gates` for more details about each operation.
+
+    """
 
     name: str
     """name of the quantum operation"""
@@ -101,30 +130,53 @@ class CircuitOperation:
             ValueError: operation is not valid
 
         """
-        # find the op type
         op_type = op_table.get(self.name)
         if op_type is None:
-            raise ValueError(f"Unknown quantum operation '{self.name}'.")
+            message = ", ".join(op_table)
+            raise ValueError(f"Unknown operation '{self.name}'. Supported operations are '{message}'.")
+        self._validate_implementation(op_type)
+        self._validate_locus(op_type)
+        self._validate_args(op_type)
 
-        # find the implementation
-        impl_name = self.implementation
-        if impl_name is not None and impl_name not in op_type.implementations:
-            raise ValueError(f"Unknown implementation '{impl_name}' for quantum operation '{self.name}'.")
+    def _validate_implementation(self, op_type: QuantumOp) -> None:
+        if self.implementation is not None:
+            if not self.implementation:
+                raise ValueError("Implementation of the instruction should be None, or a non-empty string")
+            if self.implementation not in op_type.implementations:
+                raise ValueError(f"Unknown implementation '{self.implementation}' for quantum operation '{self.name}'.")
 
-        if 0 < op_type.arity != len(self.locus):
+    def _validate_locus(self, op_type: QuantumOp) -> None:
+        arity = op_type.arity
+        if (0 < arity) and (arity != len(self.locus)):
             raise ValueError(
-                f"The '{self.name}' operation acts on {op_type.arity} qubit(s), "
-                f"but {len(self.locus)} were given: {self.locus}"
+                f"The '{self.name}' operation acts on {arity} qubit(s), but {len(self.locus)} were given: {self.locus}."
             )
-
         if len(self.locus) != len(set(self.locus)):
             raise ValueError(f"Repeated locus components: {self.locus}.")
 
-        if not set(op_type.params).issubset(self.args):
+    def _validate_args(self, op_type: QuantumOp) -> None:
+        # Check argument names
+        submitted_arg_names = set(self.args)
+        allowed_arg_types = op_type.params | op_type.optional_params
+        if not set(op_type.params) <= submitted_arg_names:
             raise ValueError(
-                f"The '{self.name}' operation requires the arguments {op_type.params}, "
-                f"but {tuple(self.args)} were given."
+                f"The operation '{self.name}' requires "
+                f"the argument(s) {tuple(op_type.params)}, "
+                f"but {tuple(submitted_arg_names)} were given."
             )
+
+        if not submitted_arg_names <= set(allowed_arg_types):
+            allowed_arg_names = tuple(allowed_arg_types)
+            message = f"the arguments {allowed_arg_names}" if allowed_arg_names else "no arguments"
+            raise ValueError(f"The operation '{self.name}' allows {message}, but {submitted_arg_names} were given.")
+        # Check argument types
+        for arg_name, arg_value in self.args.items():
+            allowed_types = allowed_arg_types[arg_name]
+            if not isinstance(arg_value, allowed_types):
+                raise ValueError(
+                    f"The argument '{arg_name}' should be of one of the following supported types"
+                    f" {allowed_types}, but ({type(arg_value)}) was given."
+                )
 
 
 def load_config(path: str) -> tuple[QuantumOpTable, OpCalibrationDataTree]:

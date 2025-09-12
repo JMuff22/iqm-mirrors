@@ -2,6 +2,22 @@
 Changelog
 =========
 
+Version 12.0.0 (2025-09-11)
+===========================
+
+Breaking changes
+----------------
+
+- :attr:`.QuantumOp.params` is now a dictionary mapping parameter names to their allowed types instead of a tuple of
+  parameter names. :issue:`SW-1663`
+- :meth:`.CircuitOperation.validate` is more strict about allowed values. For example, the types of
+  :attr:`.CircuitOperation.args` are now checked. :issue:`SW-1663`
+
+Features
+--------
+
+- Add :class:`.Circuit` and :attr:`.QuantumOp.optional_params`. :issue:`SW-1663`
+
 Version 11.2.0 (2025-09-10)
 ===========================
 
