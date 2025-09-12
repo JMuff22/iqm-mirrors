@@ -18,7 +18,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 import copy
 from dataclasses import dataclass, field, replace
-import functools
 import itertools
 import logging
 from types import MethodType
@@ -63,7 +62,7 @@ from iqm.pulse.playlist.instructions import (
     Wait,
 )
 from iqm.pulse.playlist.playlist import Playlist
-from iqm.pulse.playlist.schedule import TOLERANCE, Schedule, Segment
+from iqm.pulse.playlist.schedule import Schedule, Segment
 from iqm.pulse.quantum_ops import QuantumOp, QuantumOpTable, validate_locus_calibration, validate_op_calibration
 from iqm.pulse.scheduler import (
     NONSOLID,
@@ -956,14 +955,8 @@ class ScheduleBuilder:
     def _finish_schedule(self, schedule: Schedule) -> Schedule:
         """Finishes the instruction schedule.
 
-        * filters out zero-duration Blocks and Waits
-        * converts all spacer instructions used during scheduling to Waits
-        * merges consequent Waits
         * removes channels that only have Waits in them
-
-        This should be the final step of the schedule building process, after this the
-        resulting Schedule can no longer be consistently extended with another (since
-        all the spacer instructions are gone).
+        * fuses long-distance Rz corrections to the correct drive pulses
 
         Args:
             schedule: schedule to finish
@@ -973,46 +966,15 @@ class ScheduleBuilder:
 
         """
         has_long_distance_rzs = False
-
-        def segment_pass(inst: Instruction) -> Instruction:
-            """Convert Blocks and Nothings to Waits. Also checks for FluxPulses that have long-distance VirtualZ
-            corrections in order to determine if these need handling (for performance reasons, we want to do this
-            step only on-demand).
-            """
-            nonlocal has_long_distance_rzs
-            if isinstance(inst, NONSOLID) and not isinstance(inst, Wait):
-                return Wait(inst.duration)
-            if isinstance(inst, FluxPulse) and inst.rzs:
-                has_long_distance_rzs = True
-            return inst
-
-        def not_zero_block(inst: Instruction) -> bool:
-            """Zero-duration Block instructions have a legitimate use (in barrier ops),
-            zero-duration Wait instructions are allowed for convenience.
-            Here we filter them out.
-            """
-            return not (inst.duration < TOLERANCE and isinstance(inst, (Block, Wait)))
-
-        def merge_waits(result: list[Instruction], new: Instruction) -> list[Instruction]:
-            """Merge consequent Wait instructions."""
-            if not result:
-                return [new]  # first iteration
-            last = result[-1]
-            if isinstance(last, Wait) and isinstance(new, Wait):
-                result[-1] = Wait(int(last.duration + new.duration))  # replace last with the combined wait
-            else:
-                result.append(new)
-            return result
-
         for channel in schedule.channels():
-            seg = schedule[channel]
-            schedule[channel] = Segment(
-                functools.reduce(merge_waits, map(segment_pass, filter(not_zero_block, seg)), []),
-                duration=seg.duration,
-            )
-        if not has_long_distance_rzs:
-            return schedule.cleanup()
-        return self._fuse_long_distance_virtual_rzs(schedule)
+            if "flux" in channel:
+                for inst in schedule[channel]:
+                    if isinstance(inst, FluxPulse) and inst.rzs:
+                        has_long_distance_rzs = True
+                        break
+            if has_long_distance_rzs:
+                return self._fuse_long_distance_virtual_rzs(schedule)
+        return schedule.cleanup()
 
     def _fuse_long_distance_virtual_rzs(self, schedule: Schedule) -> Schedule:
         """Fuse long-distance (i.e. out-of-gate-locus) VirtualRZ corrections with the next drive pulse
@@ -1036,7 +998,11 @@ class ScheduleBuilder:
                     for drive_channel, rz_angle in rzs.items():
                         drive_sample_counter = 0
                         for drive_inst_idx, drive_inst in enumerate(schedule[drive_channel]):
-                            if not isinstance(drive_inst, Wait) and drive_sample_counter >= sample_counter:
+                            if (
+                                not isinstance(drive_inst, Wait)
+                                and not isinstance(drive_inst, NONSOLID)
+                                and drive_sample_counter >= sample_counter
+                            ):
                                 fuse(
                                     schedule_copy[drive_channel][drive_inst_idx],
                                     drive_inst_idx,
@@ -1345,38 +1311,58 @@ class ScheduleBuilder:
         }
 
         pl = Playlist()
-        mapped_instructions: dict[int | Instruction, Any] = {}
-        # add the schedules in the playlist
+        mapped_instructions: dict[str, dict[int, Any]] = {}
+
+        def _append_to_schedule(sc_schedule: SC_Schedule, channel_name: str, instr: Instruction) -> None:
+            """Append ``instr`` to ``sc_schedule`` into the channel``channel_name``."""
+            try:
+                # Check if instr can be used as a dictionary key, and use it if possible.
+                # 2 dataclasses can have the same hash if their fields are identical. We must
+                # distinguish between different Waveform classes which may have identical fields,
+                # so we use the instruction itself as a key, so that the class is checked too.
+                instr_id = hash(instr)
+            except TypeError:
+                instr_id = instr.id
+            if instr_id not in mapped_instructions.setdefault(channel_name, {}):
+                mapped = _map_instruction(instr)
+                idx = pl.channel_descriptions[channel_name].add_instruction(mapped)
+                sc_schedule.instructions.setdefault(channel_name, []).append(idx)
+                mapped_instructions[channel_name][instr_id] = idx
+            else:
+                sc_schedule.instructions.setdefault(channel_name, []).append(
+                    mapped_instructions[channel_name][instr_id]
+                )
+
+                # add the schedules in the playlist
+
         # NOTE that there is no implicit right-alignment or equal duration for schedules, unlike in old-style playlists!
         for schedule in schedules:
-            if finish_schedules:
-                schedule = self._finish_schedule(schedule)  # noqa: PLW2901
+            finished_schedule = self._finish_schedule(schedule) if finish_schedules else schedule
             sc_schedule = SC_Schedule()
-            for channel_name, segment in schedule.items():
+            for channel_name, segment in finished_schedule.items():
                 if (channel := channel_descriptions.get(channel_name)) is None:
-                    # ignore virtual channels in the schedule
                     continue
                 pl.add_channel(channel)
+                prev_wait = None
                 for instruction in segment:
-                    try:
-                        # Check if it can be used as a dictionary key, and use it if possible.
-                        # 2 dataclasses can have the same hash if their fields are identical. We must distinguish
-                        # between different Waveform classes which may have identical fields,
-                        # so we use the instruction itself as a key, so that the class is checked too.
-                        instr_id = instruction
-                        is_mapped = instr_id in mapped_instructions
-                    except TypeError:
-                        instr_id = instruction.id
-                        is_mapped = instr_id in mapped_instructions
-                    if is_mapped:
-                        sc_schedule.add_to_segment(channel, mapped_instructions[instr_id])
+                    # convert all NONSOLID instructions into Waits
+                    if finish_schedules and (isinstance(instruction, NONSOLID) or isinstance(instruction, Wait)):
+                        if instruction.duration > 0:
+                            if prev_wait:  # if the previous instruction was a Wait, combine durations
+                                prev_wait = Wait(prev_wait.duration + instruction.duration)
+                            else:
+                                prev_wait = Wait(instruction.duration)
                     else:
-                        mapped = _map_instruction(instruction)
-                        mapped_instructions[instr_id] = mapped
-                        sc_schedule.add_to_segment(channel, mapped)
-
+                        if prev_wait:  # if there's a prev_wait not yet added to schedule, place it before instruction
+                            instructions_to_add = [prev_wait, instruction]
+                            prev_wait = None
+                        else:
+                            instructions_to_add = [instruction]
+                        for instr in instructions_to_add:
+                            _append_to_schedule(sc_schedule, channel_name, instr)
+                if prev_wait:
+                    _append_to_schedule(sc_schedule, channel_name, prev_wait)
             pl.segments.append(sc_schedule)
-
         return pl
 
     def _set_gate_implementation_shortcut(self, op_name: str) -> None:

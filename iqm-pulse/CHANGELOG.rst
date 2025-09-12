@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.17.0 (2025-07-01)
+===========================
+
+Features
+--------
+
+- Faster playlist creation in ScheduleBuilder
+
 Version 9.16.0 (2025-07-01)
 ===========================
 
