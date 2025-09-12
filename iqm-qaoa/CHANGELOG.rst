@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 1.12.0 (2025-07-24)
+===========================
+
+Bug fixes
+---------
+
+- Address type checking flags.
+- Change the methods `EstimatorBackend` and `SamplerBackend` and their subclasses to accept only `QUBOQAOA`, to avoid violating Liskov Substitution Principle.
+
 Version 1.11.0 (2025-07-23)
 ===========================
 
