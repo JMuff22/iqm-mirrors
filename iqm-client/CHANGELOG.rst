@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 29.14.0 (2025-08-20)
+============================
+
+Bug fixes
+---------
+
+- Add explicit cross-component requirements
+
 Version 29.13.0 (2025-08-19)
 ============================
 
