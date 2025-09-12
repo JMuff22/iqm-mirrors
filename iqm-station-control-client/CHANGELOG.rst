@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.1.0 (2025-06-24)
+==========================
+
+Bug fixes
+---------
+
+- Requests now always have User-Agent header.
+
 Version 9.0.0 (2025-06-13)
 ==========================
 
