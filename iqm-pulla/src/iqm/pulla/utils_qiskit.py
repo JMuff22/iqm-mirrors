@@ -231,7 +231,7 @@ class IQMPullaBackend(IQMBackendBase):
         self.name = "IQMPullaBackend"
         self.compiler = compiler
 
-    def run(self, run_input, **options):
+    def run(self, run_input, **options):  # noqa: ANN001, ANN201
         # Convert Qiskit circuits to Pulla circuits
         pulla_circuits = qiskit_circuits_to_pulla(run_input, self._idx_to_qb)
 
@@ -266,15 +266,15 @@ class DummyJob(JobV1):
     The ``job_id`` is the same as the ``sweep_id`` of the ``StationControlResult``.
     """
 
-    def __init__(self, backend, qiskit_result):
+    def __init__(self, backend, qiskit_result):  # noqa: ANN001
         super().__init__(backend=backend, job_id=qiskit_result.job_id)
         self.qiskit_result = qiskit_result
 
-    def result(self):
+    def result(self):  # noqa: ANN201
         return self.qiskit_result
 
-    def status(self):
+    def status(self):  # noqa: ANN201
         return JobStatus.DONE
 
-    def submit(self):
+    def submit(self):  # noqa: ANN201
         return None

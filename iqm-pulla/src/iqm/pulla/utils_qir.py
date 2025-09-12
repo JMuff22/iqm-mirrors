@@ -118,14 +118,14 @@ def _gate_inst_to_str(inst: Call) -> CircuitOperation | None:
         raise ValueError(f"Error processing operation {operation}: {e}") from e
 
 
-def _find_arg_by_type(args, type_check_func):
+def _find_arg_by_type(args, type_check_func):  # noqa: ANN001, ANN202
     for arg in args:
         if type_check_func(arg.type):
             return arg
     raise ValueError(f"Expected exactly one argument of type {type_check_func}")
 
 
-def _find_args_by_type(args, type_check_func):
+def _find_args_by_type(args, type_check_func):  # noqa: ANN001, ANN202
     matches = []
     for arg in args:
         if type_check_func(arg.type):
@@ -133,7 +133,7 @@ def _find_args_by_type(args, type_check_func):
     return matches
 
 
-def _find_double_args(args):
+def _find_double_args(args):  # noqa: ANN001, ANN202
     """Return non-qubit, non-result arguments which should be doubles."""
     return [arg for arg in args if arg.type.is_double]
 

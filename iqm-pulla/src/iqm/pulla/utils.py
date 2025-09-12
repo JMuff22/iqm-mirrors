@@ -456,7 +456,7 @@ def initialize_schedule_builder(
     return builder
 
 
-def _update_channel_props_from_calibration(
+def _update_channel_props_from_calibration(  # noqa: ANN202
     channel_properties: dict[str, ChannelProperties],
     component_channels: dict[str, dict[str, str]],
     calset: CalibrationSet,

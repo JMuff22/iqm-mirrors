@@ -93,7 +93,7 @@ def pass_function_idempotent(function: PassFunction) -> PassFunction:
     return pass_with_idempotency
 
 
-def compiler_pass(function) -> PassFunction:
+def compiler_pass(function) -> PassFunction:  # noqa: ANN001
     """Convenience wrapper to create a valid compiler pass.
 
     When the wrapped function is called, the compilation data (e.g. circuits) is passed as the first argument.
