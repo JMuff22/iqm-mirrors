@@ -457,7 +457,7 @@ class IQMClient:
             if status in Status.terminal_statuses() | {Status.PENDING_EXECUTION, Status.COMPILATION_ENDED}:
                 return self.get_run(job_id)
             time.sleep(SECONDS_BETWEEN_CALLS)
-        raise APITimeoutError(f"The job compilation didn't finish in {timeout_secs} seconds.")
+        raise APITimeoutError(f"The job {job_id} compilation didn't finish in {timeout_secs} seconds.")
 
     def wait_for_results(self, job_id: UUID, timeout_secs: float = DEFAULT_TIMEOUT_SECONDS) -> RunResult:
         """Poll results until a job is either ready, failed, aborted, or timed out.
@@ -483,7 +483,7 @@ class IQMClient:
             if status in Status.terminal_statuses():
                 return self.get_run(job_id)
             time.sleep(SECONDS_BETWEEN_CALLS)
-        raise APITimeoutError(f"The job didn't finish in {timeout_secs} seconds.")
+        raise APITimeoutError(f"The job {job_id} didn't finish in {timeout_secs} seconds.")
 
     def abort_job(self, job_id: UUID, *, timeout_secs: float = REQUESTS_TIMEOUT) -> None:
         """Abort a job that was submitted for execution.
