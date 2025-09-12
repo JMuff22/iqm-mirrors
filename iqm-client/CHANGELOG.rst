@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 29.2.0 (2025-06-30)
+===========================
+
+Features
+--------
+
+- Bugfix: Fixed case where the transpiler would sometimes replace Parameters in the circuit with another Parameter.
+
 Version 29.1.0 (2025-06-30)
 ===========================
 
