@@ -181,8 +181,8 @@ class _StationControlClientBase(StationControlInterface):
         if not response.ok:
             try:
                 response_json = response.json()
-                error_message = response_json["detail"]
-            except json.JSONDecodeError:
+                error_message = response_json.get("message") or response_json["detail"]
+            except (json.JSONDecodeError, KeyError):
                 error_message = response.text
 
             try:

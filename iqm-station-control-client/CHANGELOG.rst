@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.7.0 (2025-07-10)
+==========================
+
+Bug fix
+-------
+
+- Better error handling when using IQM Server.
+
 Version 9.6.0 (2025-07-09)
 ==========================
 
