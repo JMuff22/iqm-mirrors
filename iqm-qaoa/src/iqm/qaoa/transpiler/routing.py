@@ -527,7 +527,9 @@ class Routing:
 
         return number_of_swaps_in_layers
 
-    def build_qiskit(self, betas: list[float], gammas: list[float]) -> QuantumCircuit:
+    def build_qiskit(
+        self, betas: list[float], gammas: list[float], cancel_cnots: bool = True, measurement: bool = True
+    ) -> QuantumCircuit:
         r"""Build the QAOA circuit from the :class:`~iqm.qaoa.transpiler.routing.Routing` (``self``) in :mod:`qiskit`.
 
         The :class:`~iqm.qaoa.transpiler.routing.Routing` (``self``) contains all the information needed to create
@@ -544,6 +546,10 @@ class Routing:
         Args:
             betas: The QAOA parameters to be used in the driver (*RX* gate).
             gammas: The QAOA parameters to be used in the phase separator (*RZ* and *RZZ* gates).
+            cancel_cnots: The routing is likely to contain a *SWAP* gate followed by an *RZZ* gate (or vice versa). When
+                decomposed into a particular basis gate set, these contain a pair of *CNOT* gates, which can be
+                cancelled. Iff `cancel_cnots` is ``True``, those will be cancelled already in :meth:`build_qiskit`.
+            measurement: Should the circuit contain a layer of measurements or not?
 
         Returns:
             A complete QAOA :class:`~qiskit.circuit.QuantumCircuit`.
@@ -564,16 +570,27 @@ class Routing:
         for gamma, beta in zip(gammas, betas, strict=True):
             # Apply phase separator.
             for layer in layers:
+                # Iterate through the layers of the routing.
                 for i in layer.gates.edges(data=True):
                     if i[2]["int"]:
+                        # If there is an interaction, we need to figure out its strength.
                         log_qb0 = mapping.hard2log[i[0]]
                         log_qb1 = mapping.hard2log[i[1]]
                         weight = self.problem.get_quadratic(log_qb0, log_qb1)
-                        if weight != 0:
+
+                        if (
+                            weight != 0 and i[2]["swap"] and cancel_cnots
+                        ):  # The only situation in which we cancel CNOTs.
+                            qiskit_circ.cx(qb_register.index(i[0]), qb_register.index(i[1]))
+                            qiskit_circ.rz(2 * gamma * weight, qb_register.index(i[1]))
+                            qiskit_circ.cx(qb_register.index(i[1]), qb_register.index(i[0]))
+                            qiskit_circ.cx(qb_register.index(i[0]), qb_register.index(i[1]))
+
+                        elif weight != 0:
                             qiskit_circ.rzz(2 * gamma * weight, qb_register.index(i[0]), qb_register.index(i[1]))
 
-                for i in layer.gates.edges(data=True):
-                    if i[2]["swap"]:
+                    # Avoid the case when we already did the cancellation (or there is no interaction)
+                    if i[2]["swap"] and (not i[2]["int"] or not cancel_cnots):
                         qiskit_circ.swap(qb_register.index(i[0]), qb_register.index(i[1]))
 
                 mapping.update(layer)
@@ -590,8 +607,9 @@ class Routing:
 
         classical_bits = [mapping.hard2log[hard_qb] for hard_qb in qb_register]
 
-        qiskit_circ.barrier()
-        qiskit_circ.measure(np.arange(len(qb_register)), classical_bits)
+        if measurement:
+            qiskit_circ.barrier()
+            qiskit_circ.measure(np.arange(len(qb_register)), classical_bits)
 
         return qiskit_circ
 

@@ -141,7 +141,9 @@ class RoutingStar(Routing):
 
         return number_of_moves_in_layers
 
-    def build_qiskit(self, betas: list[float], gammas: list[float]) -> QuantumCircuit:
+    def build_qiskit(
+        self, betas: list[float], gammas: list[float], cancel_cnots: bool = True, measurement: bool = True
+    ) -> QuantumCircuit:
         """Build the entire QAOA circuit in :mod:`qiskit`.
 
         The :class:`~iqm.qaoa.transpiler.star.star.RoutingStar` object contains all the information needed to create
@@ -157,6 +159,9 @@ class RoutingStar(Routing):
         Args:
             betas: The QAOA parameters to be used in the driver (*RX* gate).
             gammas: The QAOA parameters to be used in the phase separator (*RZ* and *RZZ* gates).
+            cancel_cnots: Ignored because it's not relevant for routing on the star (but is included for compatibility
+                with superclass).
+            measurement: Should the circuit contain a layer of measurements or not?
 
         Returns:
             A complete QAOA :class:`~qiskit.circuit.QuantumCircuit`.
@@ -213,8 +218,9 @@ class RoutingStar(Routing):
             # Apply driver.
             qiskit_circ.rx(2 * beta, mapping.hard2log.keys())
 
-        qiskit_circ.barrier()
-        qiskit_circ.measure(mapping.hard2log.keys(), range(len(mapping.hard2log)))
+        if measurement:
+            qiskit_circ.barrier()
+            qiskit_circ.measure(mapping.hard2log.keys(), range(len(mapping.hard2log)))
 
         return qiskit_circ
 

@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.25.0 (2025-09-05)
+===========================
+
+Features
+---------
+
+* Adds an optional input parameter to method ``build_qiskit`` of ``Routing`` which builds the circuit so that pairs of identical ``CNOT`` gates are cancelled.
+
 Version 1.24.0 (2025-09-04)
 ===========================
 
