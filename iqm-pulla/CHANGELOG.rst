@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 11.2.0 (2025-09-12)
+===========================
+
+Features
+--------
+
+- Allow executing jobs in async fashion
+
 Version 11.1.0 (2025-09-12)
 ===========================
 
