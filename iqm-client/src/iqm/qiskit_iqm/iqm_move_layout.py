@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Generate an initial layout for a quantum circuit that is
-valid on the quantum architecture specification of the given backend.
-"""
+"""Generate an initial layout for a quantum circuit containing MOVE gates."""
 
 from iqm.iqm_client import DynamicQuantumArchitecture
-from iqm.qiskit_iqm.iqm_backend import IQMBackendBase, IQMTarget
+from iqm.qiskit_iqm.iqm_backend import IQMTarget
 from qiskit import QuantumCircuit
 from qiskit.circuit import Qubit
 from qiskit.dagcircuit import DAGCircuit
@@ -228,26 +226,20 @@ class IQMMoveLayout(TrivialLayout):
 
 
 def generate_initial_layout(
-    backend: IQMBackendBase,
+    target: IQMTarget,
     circuit: QuantumCircuit,
-    restrict_to_qubits: list[int] | list[str] | None = None,
 ) -> Layout:
-    """Generates an initial layout for the given circuit, when run against the given backend.
+    """Generate an initial layout for the given circuit, for running on the given Star architecture target.
 
     Args:
-        backend: IQM backend to run against.
-        circuit: Star architecture circuit for which a layout is to be generated.
-        restrict_to_qubits: Optional list of qubits to restrict the layout to.
+        target: IQM Star architecture target to run the circuit on, without fictional gates.
+        circuit: Quantum circuit for which a layout is to be generated.
 
     Returns:
-        Layout that maps the logical qubits of ``circuit`` to the physical qubits of ``backend`` so that
+        Layout that maps the virtual/logical qubits of ``circuit`` to the physical qubits of ``target`` so that
         all the gates in ``circuit`` are available on those loci.
 
     """
-    target = backend.get_real_target()
-    if restrict_to_qubits is not None:
-        target = target.restrict_to_qubits(restrict_to_qubits)
-
     layout_gen = IQMMoveLayout(target)
     pm = PassManager(layout_gen)
     pm.run(circuit)

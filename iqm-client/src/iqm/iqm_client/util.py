@@ -14,11 +14,9 @@
 """Helpful utilities that can be used together with IQMClient."""
 
 from json import JSONEncoder, dumps, loads
-from typing import Any, TypeVar
+from typing import Any
 
 import numpy as np
-
-T = TypeVar("T")
 
 
 class IQMJSONEncoder(JSONEncoder):

@@ -2,6 +2,26 @@
 Changelog
 =========
 
+Version 30.0.0 (2025-08-20)
+===========================
+
+Features
+--------
+
+- Add the experimental :meth:`IQMClient.get_calibration_quality_metrics` method to retrieve calibration set
+  and related quality metrics from the server.
+- Select calibration and quality metric data are now available in :class:`IQMTarget`,
+  :class:`IQMBackend`, and :class:`IQMBackendBase` for transpilation and querying. :issue:`SW-769`.
+  This data includes the gate durations. :issue:`SW-1321`
+- :func:`transpile_to_IQM` no longer has the ``target`` parameter, the transpilation target is always
+  obtained from ``backend``.
+- :class:`IQMTarget` moved into its own module.
+- :class:`IQMFacadeBackend` can be given the name of the :class:`IQMFakeBackend` instance to use.
+
+Breaking Changes
+----------------
+- :func:`generate_initial_layout` takes an :class:`IQMTarget` as an input argument instead of :class:`IQMBackend`.
+
 Version 29.14.0 (2025-08-20)
 ============================
 
@@ -57,7 +77,7 @@ Features
 --------
 
 - An update to IQMFacadeBackend such that all available IQMFakeBackends are usable for simulation, rather than
-just IQMFakeAdonis
+  just IQMFakeAdonis.
 
 Version 29.7.0 (2025-07-15)
 ===========================
@@ -352,7 +372,7 @@ Version 22.16.0 (2025-04-03)
 ============================
 
 Feature
-*******
+-------
 
 - Enable PEP 604 in linting rules, :issue:`SW-1230`.
 
@@ -368,7 +388,7 @@ Version 22.14.0 (2025-04-02)
 ============================
 
 Features
-********
+--------
 
 - Update the documentation footer to display the package version.
 
