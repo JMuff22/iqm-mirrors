@@ -1,0 +1,50 @@
+# This workflow builds and deploys the 'latest' documentation when code is pushed to main.
+
+name: Build and Deploy Latest Docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python with uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          python-version: '3.11'
+
+      - name: Install build dependencies
+        run: uv pip install sphinx sphinx-book-theme requests packaging
+
+      - name: Build documentation for all packages
+        run: |
+          while IFS=, read -r package_spec _ || [[ -n "$package_spec" ]]; do
+            # Trim leading/trailing whitespace and skip comments/empty lines
+            package_spec=$(echo "$package_spec" | xargs)
+            [[ "$package_spec" =~ ^# ]] || [[ -z "$package_spec" ]] && continue
+            
+            # Extract the base name (e.g., 'iqm-client' from 'iqm-client[extras]')
+            base_name=${package_spec%%\[*}
+            
+            echo "Queueing docs build for package: $base_name (latest)"
+            bash .github/scripts/build-docs.sh "$base_name" "latest" "$package_spec"
+          done < packages.txt
+
+      - name: Generate landing page
+        run: python generate_index.py _site
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: _site
+          clean: false

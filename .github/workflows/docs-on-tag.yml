@@ -1,0 +1,55 @@
+# This workflow builds and deploys versioned documentation when a new tag is pushed.
+
+name: Build and Deploy Versioned Docs
+
+on:
+  push:
+    tags:
+      - '*/*'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python with uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          python-version: '3.11'
+
+      - name: Install build dependencies
+        run: uv pip install sphinx sphinx-book-theme requests packaging
+
+      - name: Build documentation from tag
+        run: |
+          TAG="${{ github.ref_name }}"
+          BASE_PACKAGE_NAME=$(echo "$TAG" | awk -F'/' '{print $1}')
+          VERSION=$(echo "$TAG" | awk -F'/' '{print $2}')
+          
+          echo "Processing tag for package: $BASE_PACKAGE_NAME, version: $VERSION"
+          
+          # Find the full package specification (e.g., 'iqm-client[extras]') from packages.txt
+          # This makes the workflow generic.
+          FULL_PACKAGE_SPEC=$(grep "^${BASE_PACKAGE_NAME}" packages.txt | cut -d',' -f1 | xargs)
+
+          if [ -z "$FULL_PACKAGE_SPEC" ]; then
+            echo "::error::Could not find package spec for '${BASE_PACKAGE_NAME}' in packages.txt"
+            exit 1
+          fi
+
+          bash build-docs.sh "$BASE_PACKAGE_NAME" "$VERSION" "$FULL_PACKAGE_SPEC"
+
+      - name: Generate landing page
+        run: python generate_index.py _site
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: _site
+          clean: false

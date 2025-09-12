@@ -1,0 +1,51 @@
+# This workflow automatically updates the PyPI package mirrors in the repository.
+
+name: Update PyPI Package Mirrors
+
+on:
+  # 1. Run on a schedule (e.g., once a day at midnight UTC)
+  schedule:
+    - cron: "0 0 * * *"
+
+  # 2. Allow the workflow to be triggered manually from the Actions tab
+  workflow_dispatch: {}
+
+  # 3. Trigger the workflow when the packages.txt file is changed on the main branch
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages.txt'
+
+jobs:
+  update-mirrors:
+    runs-on: ubuntu-latest
+    permissions:
+      # The workflow needs write permissions to push new commits and tags.
+      contents: write
+
+    steps:
+      - name: Check out repository
+        # We use actions/checkout@v4 to get the code.
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 is crucial. It fetches all history and tags,
+          # allowing the script to correctly identify which versions already exist.
+          fetch-depth: 0
+
+      - name: Set up Python
+        # Use a standard action to set up a Python environment.
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          uv pip install requests packaging
+
+      - name: Run PyPI Mirror Script
+        run: python pypi_mirror.py packages.txt .
+
+      - name: Push changes and tags
+        # The --follow-tags flag ensures that any new tags created by the script are pushed.
+        run: git push origin main --follow-tags
