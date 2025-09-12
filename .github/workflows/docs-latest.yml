@@ -6,6 +6,15 @@ on:
   push:
     branches:
       - main
+  
+  # Allow manual triggering with option to rebuild all
+  workflow_dispatch:
+    inputs:
+      rebuild_all:
+        description: 'Force rebuild all packages'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-and-deploy:
@@ -21,6 +30,15 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           python-version: '3.11'
+          enable-cache: true
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-docs.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install build dependencies
         run: |
@@ -30,6 +48,17 @@ jobs:
 
       - name: Build documentation for all packages
         run: |
+          # Check if this is triggered by packages.txt change or manual push
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "packages.txt")
+          
+          if [[ "$CHANGED_FILES" == *"packages.txt"* ]] || [[ "${{ github.event.inputs.rebuild_all }}" == "true" ]]; then
+            echo "packages.txt changed or manual rebuild requested - rebuilding all packages"
+            BUILD_ALL=true
+          else
+            echo "No packages.txt changes - checking for package-specific changes"
+            BUILD_ALL=false
+          fi
+          
           while IFS= read -r line || [[ -n "$line" ]]; do
             # Trim leading/trailing whitespace and skip comments/empty lines
             line=$(echo "$line" | xargs)
@@ -49,8 +78,21 @@ jobs:
             # Extract the base name (e.g., 'iqm-client' from 'iqm-client[extras]')
             base_name=${package_spec%%\[*}
             
-            echo "Queueing docs build for package: $base_name (latest)"
-            bash build-docs.sh "$base_name" "latest" "$package_spec"
+            # Check if we should build this package
+            SHOULD_BUILD=false
+            if [ "$BUILD_ALL" = true ]; then
+              SHOULD_BUILD=true
+            elif [[ "$CHANGED_FILES" == *"$base_name"* ]]; then
+              echo "Package $base_name has changes - rebuilding"
+              SHOULD_BUILD=true
+            fi
+            
+            if [ "$SHOULD_BUILD" = true ]; then
+              echo "Building docs for package: $base_name (latest)"
+              bash build-docs.sh "$base_name" "latest" "$package_spec"
+            else
+              echo "Skipping $base_name - no changes detected"
+            fi
           done < packages.txt
 
       - name: Generate landing page
