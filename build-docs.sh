@@ -49,17 +49,24 @@ if [ "$VERSION" != "latest" ]; then
   # Strip 'v' prefix from version if present (e.g., v2.39 -> 2.39)
   CLEAN_VERSION="${VERSION#v}"
   
-  # Extract base package name and extras separately
-  if [[ "$FULL_PACKAGE_SPEC" == *"["* ]]; then
-    # Package has extras like iqm-client[qiskit,cirq,cli]
-    # Correct syntax: package[extras]==version
-    VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${CLEAN_VERSION}"
+  # Special handling for older iqm-client versions
+  if [[ "$BASE_PACKAGE_NAME" == "iqm-client" ]]; then
+    # Check if version is < 30.0
+    if [[ $(echo "$CLEAN_VERSION 30.0" | awk '{print ($1 < $2)}') == 1 ]]; then
+      echo "Installing older iqm-client version with numba/llvmlite workaround"
+      VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${CLEAN_VERSION}"
+      uv pip install -U "${VERSIONED_SPEC}" numba llvmlite
+    else
+      echo "Installing newer iqm-client version normally"
+      VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${CLEAN_VERSION}"
+      uv pip install "${VERSIONED_SPEC}"
+    fi
   else
-    # Simple package name without extras
+    # Standard installation for other packages
     VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${CLEAN_VERSION}"
+    echo "Installing versioned package: ${VERSIONED_SPEC}"
+    uv pip install "${VERSIONED_SPEC}"
   fi
-  echo "Installing versioned package: ${VERSIONED_SPEC}"
-  uv pip install "${VERSIONED_SPEC}"
 else
   # For latest builds, install the latest version
   echo "Installing latest version: ${FULL_PACKAGE_SPEC}"
