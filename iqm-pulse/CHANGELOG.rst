@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.19.0 (2025-07-08)
+===========================
+
+Features
+--------
+
+- Fix bug in playlist visualisation where ndarray samples were not converted for the visualizer in one particular case.
+
 Version 9.18.0 (2025-07-02)
 ===========================
 
