@@ -92,7 +92,7 @@ class ISInstance(ConstrainedQuadraticInstance):
         return self._graph
 
     def fix_variables(self, variables: list[Variable] | dict[Variable, int]) -> None:
-        """A method to fix some of the problem variables.
+        """A method to fix (assign) some of the problem variables.
 
         When a variable is fixed to 1, all of its neighboring variables are fixed to 0 (because of the constraints).
 

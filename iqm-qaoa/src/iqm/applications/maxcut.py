@@ -34,11 +34,11 @@ Example:
         from iqm.applications.maxcut import MaxCutInstance
         from iqm.applications.maxcut import maxcut_generator
         from iqm.applications.maxcut import goemans_williamson
-        from iqm.applications.maxcut import greedy_maxcut
+        from iqm.applications.maxcut import greedy_max_cut
 
         for my_instance in maxcut_generator(graph_size, n_instances):  # Generates problem instances.
             gw_solution = goemans_williamson(my_instance)  # Solution bitstring obtained from GW.
-            greedy_solution = greedy_maxcut(my_instance)  # Solution bitstring obtained from greedy.
+            greedy_solution = greedy_max_cut(my_instance)  # Solution bitstring obtained from greedy.
             my_instance.cut_size(gw_solution)  # Check the GW solution cut size.
 
         my_maxcut_instance = MaxCutInstance(my_graph)  # Problem instance from a graph.

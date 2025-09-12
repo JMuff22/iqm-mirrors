@@ -138,7 +138,7 @@ class QPU:
             gate_lists: A dictionary whose keys are colors (as single-letter strings) and values are lists of edges
                 which should be colored that color.
             show: Boolean which decides if the graph will be shown in a pop-up window.
-            **kwargs: Arbitrary keyword arguments.
+            **kwargs: Arbitrary keyword arguments for :func:`~networkx.draw_networkx_edges`.
 
         """
         nx.draw_networkx_edges(self._hardware_graph, ax=ax, pos=self._hardware_layout, **kwargs)

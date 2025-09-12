@@ -242,7 +242,7 @@ class EstimatorFromSampler(EstimatorBackend):
         else:
             self.cvar = 1  # CVaR threshold of 1 corresponds to normal average.
 
-    def estimate(self, qaoa_object: QUBOQAOA) -> float:
+    def estimate(self, qaoa_object: QUBOQAOA, **kwargs) -> float:
         """Calculates the expectation value of the Hamiltonian by sampling from the QAOA circuit.
 
         Uses the sampler provided at initialization to sample from the QAOA circuit and then calculates the expectation
@@ -251,12 +251,15 @@ class EstimatorFromSampler(EstimatorBackend):
         Args:
             qaoa_object: The instance of :class:`~iqm.qaoa.generic_qaoa.QUBOQAOA` whose expectation value is to be
                 calculated.
+            **kwargs: Keyword arguments passed through to the :meth:`~iqm.qaoa.backends.SamplerBackend.sample`, in
+                practice, this is just ``seed_transpiler`` for the samplers which allow input seed to derandomize
+                the circuit transpilation.
 
         Returns:
             The average energy of the sampled docstrings (to serve as estimation of the expectation value).
 
         """
-        counts = self.sampler.sample(qaoa_object, self.shots)
+        counts = self.sampler.sample(qaoa_object, self.shots, **kwargs)
         return qaoa_object.problem.cvar(counts, self.cvar)
 
 
@@ -344,7 +347,7 @@ class SamplerSimulation(SamplerBackend):
         self.simulator = simulator
         self.transpiler = transpiler
 
-    def sample(self, qaoa_object: QUBOQAOA, shots: int) -> dict[str, int]:  # type:ignore[override]
+    def sample(self, qaoa_object: QUBOQAOA, shots: int, **kwargs) -> dict[str, int]:  # type:ignore[override]
         """Samples from the QAOA using a simulation.
 
         The dictionary of counts is obtained from `qiskit` and then the bitstrings are **reversed**, so they don't use
@@ -353,12 +356,14 @@ class SamplerSimulation(SamplerBackend):
         Args:
             qaoa_object: The :class:`~iqm.qaoa.generic_qaoa.QUBOQAOA` object, to be sampled from.
             shots: The number of samples (measurements) to take.
+            **kwargs: Extra keyword arguments for constructing the transpiled circuit before the simulation. Mostly
+                intended for ``seed_transpiler``, a random seed for the transpilation.
 
         Returns:
             A dictionary whose keys are the measured bitstrings and values their frequencies in the results.
 
         """
-        qc = transpiled_circuit(qaoa_object, backend=self.simulator, transpiler=self.transpiler)  # type: ignore[arg-type]
+        qc = transpiled_circuit(qaoa_object, backend=self.simulator, transpiler=self.transpiler, **kwargs)  # type: ignore[arg-type]
         job = self.simulator.run(qc, shots=shots)
         counts_from_job = job.result().get_counts()
         # Qiskit somehow reverses the order of the bitstrings.
@@ -387,7 +392,7 @@ class SamplerResonance(SamplerBackend):
         self.token = token
         self.transpiler = transpiler
 
-    def sample(self, qaoa_object: QUBOQAOA, shots: int) -> dict[str, int]:  # type:ignore[override]
+    def sample(self, qaoa_object: QUBOQAOA, shots: int, **kwargs) -> dict[str, int]:  # type:ignore[override]
         """Samples from the QAOA on a quantum computer via IQM Resonance.
 
         First, it creates a :class:`~qiskit.circuit.QuantumCircuit` (using a custom transpilation approach) and then
@@ -397,12 +402,14 @@ class SamplerResonance(SamplerBackend):
         Args:
             qaoa_object: The :class:`~iqm.qaoa.generic_qaoa.QUBOQAOA` object, to be sampled from.
             shots: The number of samples (measurements) to take.
+            **kwargs: Extra keyword arguments for constructing the transpiled circuit before sending it to Resonance.
+                Mainly intended for ``seed_transpiler``, a random seed for the transpilation.
 
         Returns:
             A dictionary whose keys are the measured bitstrings and values their frequencies in the results.
 
         """
-        qc = transpiled_circuit(qaoa_object, backend=self.iqm_backend, transpiler=self.transpiler)
+        qc = transpiled_circuit(qaoa_object, backend=self.iqm_backend, transpiler=self.transpiler, **kwargs)
         job = self.iqm_backend.run(qc, shots=shots)
         counts_from_job = job.result().get_counts()
         # Qiskit somehow reverses the order of the bitstrings.

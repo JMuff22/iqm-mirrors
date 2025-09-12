@@ -2,6 +2,21 @@
 Changelog
 =========
 
+Version 1.21.0 (2025-09-01)
+===========================
+
+Features
+--------
+
+* Allow the ``sample`` method of ``SamplerSimulation`` and ``SamplerResonance`` to pass ``seed`` to the internal ``transpiled_circuit`` function to fix the random component of transpilation.
+* Allow the ``estimate`` method of ``EstimatorFromSampler`` to pass seed to the inner ``sample`` method of the provided sampler (or any other keyword arguments).
+
+Bug fixes
+---------
+
+* Fixes the example in the module docstring of ``maxcut.py``, which used an outdated name of a solver function.
+* Set the default seed of most function / methods to ``None``, so that when the user doesn't provide it, the outputs are random and not deterministic.
+
 Version 1.20.0 (2025-09-01)
 ===========================
 
