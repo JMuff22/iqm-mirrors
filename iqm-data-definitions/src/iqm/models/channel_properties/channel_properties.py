@@ -143,13 +143,13 @@ class AWGProperties(ChannelProperties):
 @dataclass(kw_only=True)
 class ReadoutProperties(ChannelProperties):
     """Channel properties of a QA channel."""
-    integration_start_dead_time: float
-    """ Minimum delay for probe pulse entries inside a ReadoutTrigger."""
-    integration_stop_dead_time: float
+    integration_start_dead_time: int
+    """ Minimum delay for probe pulse entries inside a ReadoutTrigger in samples."""
+    integration_stop_dead_time: int
     """
-    Minimum delay after the last integrator has stopped, before a new
-    ReadoutTrigger can be executed. This delay must be taken into account when calculating the duration of a
-    ReadoutTrigger. The duration is the sum of:
+    Minimum delay in samples after the last integrator has stopped, before a new
+    ReadoutTrigger can be executed. This delay must be taken into account when calculating the duration 
+    of a ReadoutTrigger. The duration is the sum of:
 
         * This value,
         * The duration of the longest integration among the acquisitions in the ReadoutTrigger instruction,

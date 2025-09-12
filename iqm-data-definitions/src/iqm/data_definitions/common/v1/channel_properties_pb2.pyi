@@ -139,9 +139,15 @@ class ReadoutProperties(google.protobuf.message.Message):
     CHANNEL_PROPERTIES_FIELD_NUMBER: builtins.int
     INTEGRATION_START_DEAD_TIME_FIELD_NUMBER: builtins.int
     INTEGRATION_STOP_DEAD_TIME_FIELD_NUMBER: builtins.int
+    INTEGRATION_START_DEAD_TIME_SAMPLES_FIELD_NUMBER: builtins.int
+    INTEGRATION_STOP_DEAD_TIME_SAMPLES_FIELD_NUMBER: builtins.int
     integration_start_dead_time: builtins.float
-    """Dead time samples before integration"""
+    """Unused."""
     integration_stop_dead_time: builtins.float
+    """Unused."""
+    integration_start_dead_time_samples: builtins.int
+    """Dead time samples before integration"""
+    integration_stop_dead_time_samples: builtins.int
     """Dead time samples after integration."""
     @property
     def channel_properties(self) -> global___ChannelProperties: ...
@@ -151,8 +157,10 @@ class ReadoutProperties(google.protobuf.message.Message):
         channel_properties: global___ChannelProperties | None = ...,
         integration_start_dead_time: builtins.float = ...,
         integration_stop_dead_time: builtins.float = ...,
+        integration_start_dead_time_samples: builtins.int = ...,
+        integration_stop_dead_time_samples: builtins.int = ...,
     ) -> None: ...
     def HasField(self, field_name: typing.Literal["channel_properties", b"channel_properties"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing.Literal["channel_properties", b"channel_properties", "integration_start_dead_time", b"integration_start_dead_time", "integration_stop_dead_time", b"integration_stop_dead_time"]) -> None: ...
+    def ClearField(self, field_name: typing.Literal["channel_properties", b"channel_properties", "integration_start_dead_time", b"integration_start_dead_time", "integration_start_dead_time_samples", b"integration_start_dead_time_samples", "integration_stop_dead_time", b"integration_stop_dead_time", "integration_stop_dead_time_samples", b"integration_stop_dead_time_samples"]) -> None: ...
 
 global___ReadoutProperties = ReadoutProperties
