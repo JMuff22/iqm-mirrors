@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.7.0 (2025-08-20)
+==========================
+
+Features
+--------
+
+Fix qiskit-to-pulla tests so they don't initialize IQMBackend with metrics :issue:`SW-769`.
+
 Version 9.6.0 (2025-08-20)
 ==========================
 

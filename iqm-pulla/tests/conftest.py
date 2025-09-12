@@ -16,7 +16,6 @@
 from http import HTTPStatus
 from importlib.metadata import version
 import json
-import os
 from pathlib import Path
 from unittest.mock import Mock
 from uuid import UUID
@@ -43,7 +42,7 @@ from iqm.station_control.client.iqm_server import proto
 from iqm.station_control.client.iqm_server.testing.iqm_server_mock import IqmServerMockBase
 from iqm.station_control.client.station_control import StationControlClient
 
-RESOURCES = Path(os.path.abspath(__name__)).parent / "tests" / "resources"
+RESOURCES = Path(__file__).parent / "resources"
 
 
 @pytest.fixture(scope="module")
@@ -241,7 +240,7 @@ def qiskit_backend_spark(monkeypatch) -> IQMBackend:
     when(mock_about_response).json().thenReturn({})
     when(requests).get(f"{root_url}/station/about", headers=ANY).thenReturn(mock_about_response)
     iqm_client = IQMClient(f"{root_url}/station", client_signature="test fixture")
-    return IQMBackend(iqm_client, calibration_set_id=calset_id)
+    return IQMBackend(iqm_client, calibration_set_id=calset_id, use_metrics=False)
 
 
 @pytest.fixture
