@@ -2,9 +2,10 @@ import os
 import sys
 from packaging.version import parse as parse_version
 
+
 def generate_html(package_data, output_path):
-    """Generates an HTML file from a dictionary of packages and versions."""
-    html = """
+	"""Generates an HTML file from a dictionary of packages and versions."""
+	html = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,63 +26,64 @@ def generate_html(package_data, output_path):
     <h1>Package Documentation</h1>
 """
 
-    for package, versions in sorted(package_data.items()):
-        html += f'    <div class="package">\n'
-        html += f'        <h2>{package}</h2>\n'
-        html += '        <ul class="versions-list">\n'
-        
-        has_latest = 'latest' in versions
-        # Sort versions correctly, putting 'latest' first if it exists
-        sorted_versions = sorted(
-            [v for v in versions if v != 'latest'],
-            key=parse_version,
-            reverse=True
-        )
-        if has_latest:
-            sorted_versions.insert(0, 'latest')
+	for package, versions in sorted(package_data.items()):
+		html += f'    <div class="package">\n'
+		html += f"        <h2>{package}</h2>\n"
+		html += '        <ul class="versions-list">\n'
 
-        for version in sorted_versions:
-            version_class = 'latest' if version == 'latest' else ''
-            html += f'            <li class="{version_class}"><a href="{package}/{version}/index.html">{version}</a></li>\n'
-        
-        html += '        </ul>\n'
-        html += '    </div>\n'
+		has_latest = "latest" in versions
+		# Sort versions correctly, putting 'latest' first if it exists
+		sorted_versions = sorted([v for v in versions if v != "latest"], key=parse_version, reverse=True)
+		if has_latest:
+			sorted_versions.insert(0, "latest")
 
-    html += """
+		for version in sorted_versions:
+			version_class = "latest" if version == "latest" else ""
+			html += (
+				f'            <li class="{version_class}"><a href="{package}/{version}/index.html">{version}</a></li>\n'
+			)
+
+		html += "        </ul>\n"
+		html += "    </div>\n"
+
+	html += """
 </body>
 </html>
 """
-    with open(output_path, 'w') as f:
-        f.write(html)
-    print(f"Successfully generated index page at {output_path}")
+	with open(output_path, "w") as f:
+		f.write(html)
+	print(f"Successfully generated index page at {output_path}")
+
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python generate_index.py <site_directory>")
-        sys.exit(1)
-    
-    site_dir = sys.argv[1]
-    if not os.path.isdir(site_dir):
-        print(f"Error: Directory not found at '{site_dir}'")
-        sys.exit(1)
+	if len(sys.argv) != 2:
+		print("Usage: python generate_index.py <site_directory>")
+		sys.exit(1)
 
-    packages = {}
-    for package_name in os.listdir(site_dir):
-        package_path = os.path.join(site_dir, package_name)
-        if os.path.isdir(package_path):
-            versions = [
-                version_name for version_name in os.listdir(package_path)
-                if os.path.isdir(os.path.join(package_path, version_name))
-            ]
-            if versions:
-                packages[package_name] = versions
+	site_dir = sys.argv[1]
+	if not os.path.isdir(site_dir):
+		print(f"Creating site directory at '{site_dir}'")
+		os.makedirs(site_dir, exist_ok=True)
 
-    if not packages:
-        print("No packages found to index.")
-        return
+	packages = {}
+	for package_name in os.listdir(site_dir):
+		package_path = os.path.join(site_dir, package_name)
+		if os.path.isdir(package_path):
+			versions = [
+				version_name
+				for version_name in os.listdir(package_path)
+				if os.path.isdir(os.path.join(package_path, version_name))
+			]
+			if versions:
+				packages[package_name] = versions
 
-    output_file = os.path.join(site_dir, 'index.html')
-    generate_html(packages, output_file)
+	if not packages:
+		print("No packages found to index.")
+		return
+
+	output_file = os.path.join(site_dir, "index.html")
+	generate_html(packages, output_file)
+
 
 if __name__ == "__main__":
-    main()
+	main()
