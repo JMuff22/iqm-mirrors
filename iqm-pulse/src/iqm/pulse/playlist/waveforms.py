@@ -145,7 +145,35 @@ class Cosine(Waveform):
 
     @staticmethod
     def non_timelike_attributes() -> dict[str, str]:
-        return {"frequency": "Hz"}
+        return {"frequency": "Hz", "phase": "rad"}
+
+
+@dataclass(frozen=True)
+class PolynomialCosine(Waveform):
+    r"""Polynomial of a periodic sinusoidal waveform which defaults to cosine.
+
+    .. math::
+        f(t) = P(\cos(2\pi \: f \: t + \phi))
+
+    where :math:`P(x)` is a polynomial, :math:`f` is the frequency, and :math:`\phi` the phase of the wave.
+
+    Args:
+        frequency: frequency of the wave, in units of inverse sampling window duration
+        phase: phase of the wave, in radians
+
+    """
+
+    frequency: float
+    coefficients: np.ndarray
+    phase: float = 0.0
+
+    def _sample(self, sample_coords: np.ndarray) -> np.ndarray:
+        cosine = np.cos(2 * np.pi * self.frequency * sample_coords + self.phase)
+        return np.polynomial.polynomial.polyval(cosine, self.coefficients)
+
+    @staticmethod
+    def non_timelike_attributes() -> dict[str, str]:
+        return {"frequency": "Hz", "phase": "rad", "coefficients": ""}
 
 
 @dataclass(frozen=True)

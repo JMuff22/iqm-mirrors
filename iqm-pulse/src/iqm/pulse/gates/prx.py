@@ -50,6 +50,7 @@ from iqm.pulse.playlist.instructions import Block, IQPulse
 from iqm.pulse.playlist.schedule import TOLERANCE, Schedule
 from iqm.pulse.playlist.waveforms import (
     Constant,
+    Cosine,
     CosineFall,
     CosineRise,
     CosineRiseFall,
@@ -414,6 +415,13 @@ class PRX_HdDragSX(PRX_CustomWaveformsSX, wave_i=HdDragI, wave_q=HdDragQ):  # ty
 
 class PRX_HdDrag(PRX_CustomWaveforms, wave_i=HdDragI, wave_q=HdDragQ):  # type:ignore[call-arg]
     """PRX gate, HD DRAG IQ pulse based on amplitude scaling
+
+    See :class:`.PRX_CustomWaveforms`.
+    """
+
+
+class PRX_Cosine(PRX_CustomWaveforms, wave_i=Cosine, wave_q=Cosine):  # type:ignore[call-arg]
+    """Special modulated pulse resulting in two frequency sidebands.
 
     See :class:`.PRX_CustomWaveforms`.
     """

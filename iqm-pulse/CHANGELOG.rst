@@ -2,6 +2,19 @@
 Changelog
 =========
 
+Version 10.1.0 (2025-07-18)
+===========================
+
+Features
+--------
+- Add a new "prx" implementation :class:`PRX_Cosine`, using a cosine pulse for both I and Q components.
+- Add a new waveform :class:`PolynomialCosine`, which is a polynomial function of a cosine,
+  :math:`f(n) = \sum_{k=0}^m a_k \cos^k(2 \pi f n)`, where :math:`n` is the sample index.
+
+Bug Fixes
+---------
+- In the waveform :class:`Cosine` add ``phase`` to :attr:`non_timelike_attributes`.
+
 Version 10.0.0 (2025-07-16)
 ===========================
 
