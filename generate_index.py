@@ -34,7 +34,7 @@ def generate_html(package_data, output_path):
 		has_latest = "latest" in versions
 		# Sort versions correctly, putting 'latest' first if it exists
 		other_versions = [v for v in versions if v != "latest"]
-		
+
 		# Filter out versions that can't be parsed and sort the rest
 		valid_versions = []
 		invalid_versions = []
@@ -44,11 +44,11 @@ def generate_html(package_data, output_path):
 				valid_versions.append(v)
 			except Exception:
 				invalid_versions.append(v)
-		
+
 		sorted_versions = sorted(valid_versions, key=parse_version, reverse=True)
 		# Add invalid versions at the end (alphabetically sorted)
 		sorted_versions.extend(sorted(invalid_versions))
-		
+
 		if has_latest:
 			sorted_versions.insert(0, "latest")
 
@@ -88,7 +88,7 @@ def main():
 			for version_name in os.listdir(package_path):
 				if os.path.isdir(os.path.join(package_path, version_name)):
 					# Skip non-version directories like jupyter_execute, .doctrees, etc.
-					if version_name in ['jupyter_execute', '.doctrees', '_static', '_sources']:
+					if version_name in ["jupyter_execute", ".doctrees", "_static", "_sources"]:
 						continue
 					versions.append(version_name)
 			if versions:
