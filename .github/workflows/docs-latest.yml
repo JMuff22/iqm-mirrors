@@ -49,10 +49,18 @@ jobs:
       - name: Build documentation for all packages
         run: |
           # Check if this is triggered by packages.txt change or manual push
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "packages.txt")
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
           
-          if [[ "$CHANGED_FILES" == *"packages.txt"* ]] || [[ "${{ github.event.inputs.rebuild_all }}" == "true" ]]; then
-            echo "packages.txt changed or manual rebuild requested - rebuilding all packages"
+          echo "Changed files: $CHANGED_FILES"
+          
+          if [[ "$CHANGED_FILES" == *"packages.txt"* ]]; then
+            echo "packages.txt changed - rebuilding all packages"
+            BUILD_ALL=true
+          elif [[ "${{ github.event.inputs.rebuild_all }}" == "true" ]]; then
+            echo "Manual rebuild requested - rebuilding all packages"
+            BUILD_ALL=true
+          elif [[ -z "$CHANGED_FILES" ]]; then
+            echo "No previous commit found (probably initial commit) - rebuilding all packages"
             BUILD_ALL=true
           else
             echo "No packages.txt changes - checking for package-specific changes"
