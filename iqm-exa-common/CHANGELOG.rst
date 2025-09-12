@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 26.18.0 (2025-05-12)
+============================
+
+Features
+--------
+
+- Changes in CI and image build logic, no functional changes.
+
 Version 26.17.1 (2025-05-12)
 ============================
 
