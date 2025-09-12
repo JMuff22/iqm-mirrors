@@ -251,7 +251,7 @@ class StationControlClient(_StationControlClientBase):
         super().__init__(
             root_url,
             get_token_callback=get_token_callback,
-            client_signature=client_signature,
+            client_signature=client_signature,  # type: ignore[arg-type]
             enable_opentelemetry=os.environ.get("JAEGER_OPENTELEMETRY_COLLECTOR_ENDPOINT", None) is not None,
         )
         # TODO SW-1387: Remove this when using v1 API, not needed
@@ -602,7 +602,7 @@ class StationControlClient(_StationControlClientBase):
 
     @staticmethod
     def _clean_query_parameters(model: Any, **kwargs) -> dict[str, Any]:
-        if issubclass(model, PydanticBase) and "invalid" in model.model_fields.keys() and "invalid" not in kwargs:
+        if issubclass(model, PydanticBase) and "invalid" in model.model_fields and "invalid" not in kwargs:
             # Get only valid items by default, "invalid=None" would return also invalid ones.
             # This default has to be set on the client side, server side uses default "None".
             kwargs["invalid"] = False
@@ -611,7 +611,7 @@ class StationControlClient(_StationControlClientBase):
     @staticmethod
     def _deserialize_response(
         response: requests.Response,
-        model_class: type[TypePydanticBase] | type[ListModel[list[TypePydanticBase]]],
+        model_class: type[TypePydanticBase | ListModel[list[TypePydanticBase]]],
         *,
         list_with_meta: bool = False,
     ) -> TypePydanticBase | ListWithMeta[TypePydanticBase]:

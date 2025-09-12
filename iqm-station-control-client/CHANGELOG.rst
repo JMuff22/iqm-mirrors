@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.2.0 (2025-06-25)
+==========================
+
+Bug fixes
+---------
+
+- Fix failing type checks in mypy.
+
 Version 9.1.0 (2025-06-24)
 ==========================
 

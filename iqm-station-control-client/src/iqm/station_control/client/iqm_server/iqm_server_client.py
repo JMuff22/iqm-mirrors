@@ -96,7 +96,7 @@ class IqmServerClient(_StationControlClientBase):
     ):
         super().__init__(root_url, get_token_callback=get_token_callback, client_signature=client_signature)
         self._connection_params = parse_connection_params(root_url)
-        self._cached_resources = {}
+        self._cached_resources: dict[str, Any] = {}
         self._latest_submitted_sweep = None
         self._channel = grpc_channel or create_channel(self._connection_params, self._get_token_callback)
         self._current_qc = resolve_current_qc(self._channel, self._connection_params.quantum_computer)
