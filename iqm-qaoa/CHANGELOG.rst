@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.5.0 (2025-06-23)
+==========================
+
+Bug fixes
+---------
+
+- Fix `__init__.py` docstring in `star` transpilation submodule.
+
 Version 1.4.0 (2025-06-23)
 ==========================
 
