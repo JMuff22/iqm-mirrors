@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 1.15.0 (2025-08-08)
+===========================
+
+Bug Fixes
+---------
+- Replace calls to ``numpy.random`` with creation of an RNG object and calls to its methods.
+
 Version 1.14.0 (2025-08-01)
 ===========================
 
