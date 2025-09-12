@@ -101,7 +101,7 @@ class IQMMoveLayout(TrivialLayout):
                 return False
         return True
 
-    def run(self, dag: DAGCircuit):
+    def run(self, dag: DAGCircuit):  # noqa: ANN201
         """Creates a valid layout for the given quantum circuit.
 
         Args:
@@ -194,7 +194,7 @@ class IQMMoveLayout(TrivialLayout):
         resonators: set[int] = set()
         qubit_to_idx: dict[Qubit, int] = {qubit: log_idx for log_idx, qubit in enumerate(dag.qubits)}
 
-        def _require_qubit_type(qubit: Qubit, required_type: str):
+        def _require_qubit_type(qubit: Qubit, required_type: str):  # noqa: ANN202
             """Add a requirement for the given qubit."""
             log_idx = qubit_to_idx[qubit]
             if log_idx in resonators:
@@ -204,7 +204,7 @@ class IQMMoveLayout(TrivialLayout):
                 )
             reqs.setdefault(log_idx, set()).add(required_type)
 
-        def _require_resonator(qubit: Qubit):
+        def _require_resonator(qubit: Qubit):  # noqa: ANN202
             """Add a requirement for the given resonator."""
             log_idx = qubit_to_idx[qubit]
             if log_idx in reqs:

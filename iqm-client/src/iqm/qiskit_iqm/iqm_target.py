@@ -93,7 +93,7 @@ class IQMTarget(Target):
         self.iqm_metrics = metrics
         self._add_instructions_from_DQA()
 
-    def _add_instructions_from_DQA(self):
+    def _add_instructions_from_DQA(self):  # noqa: ANN202
         """Initializes the Target with instructions and properties that represent the
         dynamic quantum architecture :attr:`iqm_dqa`.
 

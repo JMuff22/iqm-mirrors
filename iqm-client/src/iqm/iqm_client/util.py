@@ -22,7 +22,7 @@ import numpy as np
 class IQMJSONEncoder(JSONEncoder):
     """JSONEncoder that that adds support for some non-JSON datatypes"""
 
-    def default(self, o: Any):
+    def default(self, o: Any):  # noqa: ANN201
         if isinstance(o, np.ndarray):
             return o.tolist()
         return JSONEncoder.default(self, o)

@@ -85,7 +85,7 @@ class IQMSampler(cirq.work.Sampler):
         """Returns the device used by the sampler."""
         return self._device
 
-    def close_client(self):
+    def close_client(self):  # noqa: ANN201
         """Close IQMClient's session with the user authentication server. Discard the client."""
         if not self._client:
             return

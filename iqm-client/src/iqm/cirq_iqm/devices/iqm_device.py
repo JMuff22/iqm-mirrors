@@ -364,5 +364,5 @@ class IQMDevice(devices.Device):
             if len(qubits_updated) != 0:
                 raise ValueError(f"Circuit ends with a qubit state in the resonator {res!r}.")
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # noqa: ANN001
         return self.__class__ == other.__class__ and self._metadata == other._metadata

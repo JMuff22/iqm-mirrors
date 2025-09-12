@@ -288,7 +288,7 @@ class Instruction(BaseModel):
 
     @field_validator("name")
     @classmethod
-    def name_validator(cls, value):
+    def name_validator(cls, value):  # noqa: ANN001
         """Check if the name of instruction is set to one of the supported quantum operations."""
         name = value
         if name not in _SUPPORTED_OPERATIONS:
@@ -298,7 +298,7 @@ class Instruction(BaseModel):
 
     @field_validator("implementation")
     @classmethod
-    def implementation_validator(cls, value):
+    def implementation_validator(cls, value):  # noqa: ANN001
         """Check if the implementation of the instruction is set to a non-empty string."""
         implementation = value
         if isinstance(implementation, str):
@@ -308,7 +308,7 @@ class Instruction(BaseModel):
 
     @field_validator("qubits")
     @classmethod
-    def qubits_validator(cls, value, info: ValidationInfo):
+    def qubits_validator(cls, value, info: ValidationInfo):  # noqa: ANN001
         """Check if the instruction has the correct number of qubits for its operation."""
         qubits = value
         name = info.data.get("name")
@@ -321,7 +321,7 @@ class Instruction(BaseModel):
 
     @field_validator("args")
     @classmethod
-    def args_validator(cls, value, info: ValidationInfo):
+    def args_validator(cls, value, info: ValidationInfo):  # noqa: ANN001
         """Check argument names and types for a given instruction"""
         args = value
         name = info.data.get("name")
@@ -426,7 +426,7 @@ class Circuit(BaseModel):
 
     @field_validator("name")
     @classmethod
-    def name_validator(cls, value):
+    def name_validator(cls, value):  # noqa: ANN001
         """Check if the circuit name is a non-empty string"""
         name = value
         if len(name) == 0:
@@ -435,7 +435,7 @@ class Circuit(BaseModel):
 
     @field_validator("instructions")
     @classmethod
-    def instructions_validator(cls, value):
+    def instructions_validator(cls, value):  # noqa: ANN001
         """Check the container of instructions and each instruction within"""
         instructions = value
 

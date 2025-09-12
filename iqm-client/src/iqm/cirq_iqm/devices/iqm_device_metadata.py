@@ -166,5 +166,5 @@ class IQMDeviceMetadata(devices.DeviceMetadata):
         """Returns the ``cirq.Gateset`` of supported gates on this device."""
         return self._gateset
 
-    def _value_equality_values_(self):
+    def _value_equality_values_(self):  # noqa: ANN202
         return *super()._value_equality_values_(), self._gateset
