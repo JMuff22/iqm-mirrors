@@ -364,7 +364,7 @@ class Chirp(Waveform):
     alpha: float = 0.05
     phase: float = 0
 
-    def _sample(self, sample_coords):
+    def _sample(self, sample_coords):  # noqa: ANN001, ANN202
         chirpfreq = np.linspace(self.freq_start, self.freq_stop, len(sample_coords))
         chirpphase = 2 * np.pi * np.cumsum(chirpfreq) + self.phase
         wave = np.exp(1j * chirpphase) * ss.windows.tukey(len(sample_coords), self.alpha)

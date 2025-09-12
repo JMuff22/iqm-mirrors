@@ -253,7 +253,7 @@ class RZ_PRX_Composite(CompositeGate):
 
     registered_gates = ("prx",)
 
-    def __init__(self, parent, name, locus, calibration_data, builder):
+    def __init__(self, parent, name, locus, calibration_data, builder):  # noqa: ANN001
         super().__init__(parent, name, locus, calibration_data, builder)
 
     def __call__(self, angle: float) -> TimeBox:

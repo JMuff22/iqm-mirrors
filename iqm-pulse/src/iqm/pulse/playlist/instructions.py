@@ -103,7 +103,7 @@ class RealPulse(Instruction):
     scale: float
     """Scaling factor for the waveform."""
 
-    def validate(self):
+    def validate(self):  # noqa: ANN201
         super().validate()
         if abs(self.scale) > 1.0:
             raise ValueError(f"RealPulse.scale {self.scale} not in [-1, 1].")
@@ -149,7 +149,7 @@ class IQPulse(Instruction):
     all pulses that are played after it on the channel, in radians.
     """
 
-    def validate(self):
+    def validate(self):  # noqa: ANN201
         super().validate()
         if abs(self.scale_i) > 1.0:
             raise ValueError(f"IQPulse.scale_i {self.scale_i} not in [-1, 1].")
@@ -169,7 +169,7 @@ class ConditionalInstruction(Instruction):
     outcomes: tuple[Instruction, ...]
     """Maps possible outcomes of the condition to the corresponding instructions."""
 
-    def validate(self):
+    def validate(self):  # noqa: ANN201
         super().validate()
         if not self.outcomes:
             raise ValueError("There must be at least one outcome.")

@@ -145,7 +145,7 @@ def get_unitary_from_circuit(
     return unitary
 
 
-def _get_qubit_order_from_circuit(circuit: list[CircuitOperation]):
+def _get_qubit_order_from_circuit(circuit: list[CircuitOperation]):  # noqa: ANN202
     """Get all qubits which are in the circuit in order."""
     # unique items, in the same order
     return list(dict.fromkeys(qb for op in circuit for qb in op.locus))
@@ -278,7 +278,7 @@ class CircuitOperationList(list):
             if self.table[op_name].arity:
                 self._set_specific_operation_shortcut(op_name)
 
-    def __getitem__(self, item) -> CircuitOperationList | CircuitOperation:  # type: ignore[override]  # type: ignore[override]  # type: ignore[override]
+    def __getitem__(self, item) -> CircuitOperationList | CircuitOperation:  # type: ignore[override]  # type: ignore[override]  # type: ignore[override]  # noqa: ANN001
         """For the builtin list, this method is used both for accessing a single element: ``mylist[0]`` and accessing
         a slice: ``mylist[1:3]``. The latter should generate a new CircuitOperationList, so we override the method to
         ensure that it does.
@@ -290,12 +290,12 @@ class CircuitOperationList(list):
 
         return result
 
-    def __add__(self, other) -> CircuitOperationList:
+    def __add__(self, other) -> CircuitOperationList:  # noqa: ANN001
         new = CircuitOperationList(list.__add__(self, other), qubits=self.qubits, table=self.table)
 
         return new
 
-    def __mul__(self, other) -> CircuitOperationList:
+    def __mul__(self, other) -> CircuitOperationList:  # noqa: ANN001
         new = CircuitOperationList(list.__mul__(self, other), qubits=self.qubits, table=self.table)
         return new
 
@@ -377,7 +377,7 @@ class CircuitOperationList(list):
 
     def compose(
         self,
-        other,
+        other,  # noqa: ANN001
         locus_indices: list[int] | None = None,
     ) -> Self:
         """A safer way to add circuits together, but will probably take time.
@@ -482,8 +482,8 @@ class CircuitOperationList(list):
         num_params = len(op.params)
         arity = op.arity
 
-        def _add_specific_op(
-            self,
+        def _add_specific_op(  # noqa: ANN202
+            self,  # noqa: ANN001
             *args_and_locus,
             impl_name: str | None = None,
         ):

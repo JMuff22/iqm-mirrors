@@ -1496,7 +1496,7 @@ class ScheduleBuilder:
         """
 
         def _shortcut_mthd(
-            self,
+            self,  # noqa: ANN001
             locus: Iterable[str],
             impl_name: str | None = None,
             *,
