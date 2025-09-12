@@ -136,17 +136,17 @@ class IQPulse(Instruction):
     scale_q: float = 0.0
     """Scaling factor for the Q quadrature."""
     phase: float = 0.0
-    """Phase of the pulse relative to the channel frequency, in radians."""
+    """Phase of the pulse relative to the channel upconversion oscillator ("carrier wave"), in radians."""
     modulation_frequency: float = 0.0
     """Modulation frequency of the waveforms, in units of the sampling rate.
-    This modulation is additional to the channel frequency.
+    This modulation is additional to the channel upconversion frequency.
     The default value of 0.0 does not modulate.
     Note that the phase of this modulation resets for every instruction, that is, successive instances of the same
     modulated pulse are not phase coherent.
     """
     phase_increment: float = 0.0
-    """Relative phase increment to the phase in the carrier frequency of this pulse and all pulses that
-    are played after it. Unit: rad.
+    """Phase increment for the channel upconversion oscillator ("carrier wave"), affecting this pulse and
+    all pulses that are played after it on the channel, in radians.
     """
 
     def validate(self):
@@ -165,9 +165,9 @@ class ConditionalInstruction(Instruction):
     """Choice between multiple Instructions, depending on a condition."""
 
     condition: str
-    """can be evaluated to an integer >= 0"""
+    """Can be evaluated to an integer >= 0 representing an outcome."""
     outcomes: tuple[Instruction, ...]
-    """maps possible outcomes of the condition to the corresponding instructions"""
+    """Maps possible outcomes of the condition to the corresponding instructions."""
 
     def validate(self):
         super().validate()
@@ -186,7 +186,7 @@ class ConditionalInstruction(Instruction):
 
 @dataclass(frozen=True)
 class MultiplexedIQPulse(Instruction):
-    """Instruction to simultaneously play multiple IQ pulses.
+    """Play the sum of multiple IQ pulses.
 
     Each component pulse can have an arbitrary delay from the beginning of this instruction.
     Outside the interval of the MultiplexedIQPulse, the component pulses are truncated.

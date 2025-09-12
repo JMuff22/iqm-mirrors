@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""This file defines the default quantum gates and operations for IQM's pulse control system"""
+"""Canonical quantum operations and implementations provided by iqm-pulse."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -53,11 +57,13 @@ from iqm.pulse.gates.rz import (
 )
 from iqm.pulse.gates.sx import SXGate
 from iqm.pulse.gates.u import UGate, get_unitary_u
-from iqm.pulse.quantum_ops import QuantumOp, QuantumOpTable
+from iqm.pulse.quantum_ops import QuantumOp
 
-"""A collection of mappings between default implementation names and their GateImplementation classes,
-for different gates."""
-_default_implementations = {
+if TYPE_CHECKING:
+    from iqm.pulse.gate_implementation import GateImplementation
+
+
+_default_implementations: dict[str, dict[str, type[GateImplementation]]] = {
     "barrier": {"": Barrier},
     "delay": {"wait": Delay},
     "measure": {
@@ -99,119 +105,10 @@ _default_implementations = {
     "reset_wait": {"reset_wait": Reset_Wait},
     "flux_multiplexer": {"sample_linear": FluxMultiplexer_SampleLinear},
 }
+"""Canonical implementation names for the canonical quantum operations.
+A collection of mappings between default implementation names and their GateImplementation classes,
+for different gates."""
 
-"""A table of quantum operations (`_default_operations`) defining characteristics:
-    - Number of qubits involved (arity)
-    - Required parameters
-    - GateImplementation classes
-    - Unitary matrices where applicable
-    - Properties like symmetry and factorizability
-This table is here so that we retain information about operations, even though they might 
-be deleted in the future.
-"""
-_default_operations: QuantumOpTable = {
-    op.name: op
-    for op in [
-        QuantumOp(
-            "barrier",
-            0,
-            implementations=_default_implementations["barrier"],  # type: ignore[arg-type]
-            symmetric=True,
-        ),
-        QuantumOp(
-            "delay",
-            0,
-            ("duration",),
-            implementations=_default_implementations["delay"],  # type: ignore[arg-type]
-            symmetric=True,
-        ),
-        QuantumOp(
-            "measure",
-            0,
-            ("key",),
-            implementations=_default_implementations["measure"],  # type: ignore[arg-type]
-            factorizable=True,
-        ),
-        QuantumOp(
-            "prx",
-            1,
-            ("angle", "phase"),
-            implementations=_default_implementations["prx"],  # type: ignore[arg-type]
-            unitary=get_unitary_prx,
-        ),
-        QuantumOp(
-            "prx_12",
-            1,
-            ("angle", "phase"),
-            implementations=_default_implementations["prx_12"],  # type: ignore[arg-type]
-        ),
-        QuantumOp(
-            "u",
-            1,
-            ("theta", "phi", "lam"),
-            implementations=_default_implementations["u"],  # type: ignore[arg-type]
-            unitary=get_unitary_u,
-        ),
-        QuantumOp(
-            "sx",
-            1,
-            implementations=_default_implementations["sx"],  # type: ignore[arg-type]
-            unitary=lambda: get_unitary_prx(np.pi / 2, 0),
-        ),
-        QuantumOp(
-            "rz",
-            1,
-            ("angle",),
-            implementations=_default_implementations["rz"],  # type: ignore[arg-type]
-            unitary=get_unitary_rz,
-        ),
-        QuantumOp(
-            "rz_physical",
-            1,
-            implementations=_default_implementations["rz_physical"],  # type: ignore[arg-type]
-        ),
-        QuantumOp(
-            "cz",
-            2,
-            (),
-            implementations=_default_implementations["cz"],  # type: ignore[arg-type]
-            symmetric=True,
-            unitary=lambda: np.diag([1.0, 1.0, 1.0, -1.0]),
-        ),
-        QuantumOp(
-            "move",
-            2,
-            implementations=_default_implementations["move"],  # type: ignore[arg-type]
-        ),
-        QuantumOp(
-            "cc_prx",
-            1,
-            ("angle", "phase", "feedback_qubit", "feedback_key"),
-            implementations=_default_implementations["cc_prx"],  # type: ignore[arg-type]
-        ),
-        QuantumOp(
-            "reset",
-            0,
-            implementations=_default_implementations["reset"],  # type: ignore[arg-type]
-            symmetric=True,
-            factorizable=True,
-        ),
-        QuantumOp(
-            "reset_wait",
-            0,
-            implementations=_default_implementations["reset_wait"],  # type: ignore[arg-type]
-            symmetric=True,
-            factorizable=True,
-        ),
-        QuantumOp(
-            "flux_multiplexer",
-            0,
-            implementations=_default_implementations["flux_multiplexer"],  # type: ignore[arg-type]
-        ),
-    ]
-}
-
-"""A library for all canonical Quantum Operations (gates)"""
 _quantum_ops_library = {
     op.name: op
     for op in [
@@ -313,3 +210,6 @@ _quantum_ops_library = {
         ),
     ]
 }
+"""Library of the current canonical quantum operations provided by iqm-pulse."""
+# NOTE If a canonical operation is removed in the future, consider adding a second dict for former
+# canonical operations so that we retain information about them.

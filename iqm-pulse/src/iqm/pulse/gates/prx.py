@@ -211,11 +211,6 @@ class PRX_SinglePulse_GateImplementation(SinglePulseGate, PrxGateImplementation)
         timebox.neighborhood_components[0] = set(self.locus)
         return timebox
 
-    @property
-    def iq_pulse(self) -> IQPulse:
-        """Alias for ``self.pulse`` for backward compatibility"""
-        return self.pulse  # type: ignore[return-value]
-
 
 class PRX_CustomWaveforms(PRX_SinglePulse_GateImplementation, CustomIQWaveforms):
     """Base class for PRX gates implemented using a single IQ pulse and hot-swappable waveforms."""

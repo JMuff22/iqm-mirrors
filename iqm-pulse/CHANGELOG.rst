@@ -2,6 +2,18 @@
 Changelog
 =========
 
+Version 10.0.0 (2025-07-16)
+===========================
+
+Breaking changes
+----------------
+
+- :class:`.CompositeGate` subclasses must now include all their member gates in :attr:`.CompositeGate.registered_gates`.
+  The subclasses should apply the member gates using :meth:`.CompositeGate.build`.
+- Removed the :meth:`.PRX_SinglePulse_GateImplementation.iq_pulse` alias, use ``.pulse`` instead.
+- :func:`.register_implementation` no longer can register or define a QuantumOp.
+  :func:`.register_operation` is introduced for that purpose.
+
 Version 9.21.0 (2025-07-10)
 ===========================
 
@@ -200,7 +212,7 @@ Version 8.12.0 (2025-04-03)
 ===========================
 
 Feature
-*******
+-------
 
 - Format code and enable PEP 604 in linting rules, :issue:`SW-1230`.
 
@@ -217,7 +229,7 @@ Version 8.10.0 (2025-04-02)
 ===========================
 
 Features
-********
+--------
 
 - Update the documentation footer to display the package version.
 

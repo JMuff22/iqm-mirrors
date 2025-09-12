@@ -40,11 +40,12 @@ from iqm.pulse.gate_implementation import (
     CompositeCache,
     GateImplementation,
     Locus,
+    OICalibrationData,
     OILCalibrationData,
     OpCalibrationDataTree,
 )
-from iqm.pulse.gates import _exposed_implementations
-from iqm.pulse.gates.default_gates import _default_implementations, _quantum_ops_library
+from iqm.pulse.gates import _validate_implementation, get_implementation_class
+from iqm.pulse.gates.default_gates import _quantum_ops_library
 from iqm.pulse.playlist.channel import ChannelProperties, ProbeChannelProperties
 from iqm.pulse.playlist.instructions import (
     AcquisitionMethod,
@@ -72,11 +73,6 @@ from iqm.pulse.scheduler import (
     extend_schedule_new,
 )
 from iqm.pulse.timebox import SchedulingAlgorithm, SchedulingStrategy, TimeBox
-from iqm.pulse.utils import (
-    _process_implementations,
-    _validate_locus_defaults,
-    _validate_op_attributes,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +115,9 @@ class CircuitOperation:
                 f"The '{self.name}' operation acts on {op_type.arity} qubit(s), "
                 f"but {len(self.locus)} were given: {self.locus}"
             )
+
+        if len(self.locus) != len(set(self.locus)):
+            raise ValueError(f"Repeated locus components: {self.locus}.")
 
         if not set(op_type.params).issubset(self.args):
             raise ValueError(
@@ -169,9 +168,9 @@ def validate_quantum_circuit(
     for op in operations:
         op.validate(op_table)
 
-        if key := op.args.get("key"):
-            # this is a measurement operation
-            if key in measurement_keys:
+        # extra validation for specific operations
+        if op.name == "measure":
+            if (key := op.args["key"]) in measurement_keys:
                 raise ValueError(f"Measurement key '{key}' is not unique.")
 
             measurement_keys.add(key)
@@ -182,36 +181,81 @@ def validate_quantum_circuit(
         raise ValueError("Circuit contains no measurements.")
 
 
-def build_quantum_ops(ops: dict[str, Any]) -> QuantumOpTable:
+def build_quantum_ops(ops: dict[str, dict[str, Any]]) -> QuantumOpTable:
     """Builds the table of known quantum operations.
 
-    Hardcoded default native ops table is extended by the ones in `ops`.
-    In case of name collisions, the content of `ops` takes priority over the defaults.
+    Hardcoded default native ops table is extended by the ones in ``ops``.
+    In case of name collisions, the content of ``ops`` takes priority over the defaults.
 
     Args:
         ops: Contents of the ``gate_definitions`` section defining
-        the quantum operations in the configuration YAML file.
-        Modified by the function.
+            the quantum operations in the configuration YAML file.
+            Implementation names must be mapped to either exposed GateImplementation
+            class names, or actual GateImplementation classes.
+            NOTE: Modified by the function.
 
     Returns:
-        Mapping from quantum operation name to its definition
+        Mapping from quantum operation names to their definitions.
+
+    Raises:
+        ValueError: Requested implementation class is not exposed.
+        ValueError: A canonical implementation name is being redefined.
+        ValueError: Locus default references an undefined implementation.
+        ValueError: Operation attributes don't match defaults or are invalid.
 
     """
     op_table = copy.deepcopy(_quantum_ops_library)
-    for op_name, definition in ops.items():
-        implementations_def = definition.pop("implementations", {})
-        implementations = _process_implementations(
-            op_name, implementations_def, _exposed_implementations, _default_implementations
-        )
+    for op_name, op_definition in ops.items():
+        # prepare the implementations
+        implementations: dict[str, type[GateImplementation]] = {}
+        for impl_name, impl_class_def in op_definition.pop("implementations", {}).items():
+            if isinstance(impl_class_def, str):
+                # check if the impl class name has been exposed
+                impl_class_name = impl_class_def
+                if (impl_class := get_implementation_class(impl_class_name)) is None:
+                    raise ValueError(
+                        f"'{op_name}': Requested implementation class '{impl_class_name}' has not been exposed."
+                    )
+            elif issubclass(impl_class_def, GateImplementation):
+                # bit of a hack: also accept GateImplementation classes directly
+                impl_class = impl_class_def
+                impl_class_name = impl_class.__name__
+            else:
+                raise ValueError(f"{op_name}: {impl_class_def} is neither a str or a type[GateImplementation].")
 
-        if "defaults_for_locus" in definition:
-            _validate_locus_defaults(op_name, definition, implementations)
+            # check if we are overriding a canonical implementation name for this op
+            _validate_implementation(op_name, impl_name, impl_class_name)
+            implementations[impl_name] = impl_class
 
-        if op_name in op_table:
-            _validate_op_attributes(op_name, definition, op_table)
-            op_table[op_name] = replace(op_table[op_name], implementations=implementations, **definition)
+        # validate defaults_for_locus
+        defaults_for_locus: dict[Locus, str] = op_definition.pop("defaults_for_locus", {})
+        for locus, impl_name in defaults_for_locus.items():
+            if impl_name not in implementations:
+                raise ValueError(
+                    f"'{op_name}': defaults_for_locus[{locus}] implementation '{impl_name}' does not "
+                    f"appear in the implementations dict."
+                )
+
+        # prepare a new op, or modify the existing one
+        if (old_op := op_table.get(op_name)) is not None:
+            # known op: only some fields can be redefined, and they have been popped out already
+            if op_definition:
+                # TODO this should be an error, but there are so many old experiment.yml files in use
+                # that still have the old syntax that being strict about this would be disruptive.
+                # Now we just ignore the fields you cannot change.
+                logger.warning(
+                    f"'{op_name}' is a canonical operation, which means the fields {set(op_definition)} "
+                    "provided by the user may not be changed."
+                )
+            op_table[op_name] = replace(old_op, implementations=implementations, defaults_for_locus=defaults_for_locus)
         else:
-            op_table[op_name] = QuantumOp(name=op_name, implementations=implementations, **definition)
+            # new op
+            op_table[op_name] = QuantumOp(
+                name=op_name,
+                implementations=implementations,
+                defaults_for_locus=defaults_for_locus,
+                **op_definition,
+            )
 
     return op_table
 
@@ -300,20 +344,22 @@ class ScheduleBuilder:
         raise ValueError(f"No operation found with the name {item} in ``self.op_table``.")
 
     def inject_calibration(self, partial_calibration: OpCalibrationDataTree) -> None:
-        """Inject new calibration data, changing ``self.calibration`` after the ScheduleBuilder initialisation.
+        """Inject new calibration data, changing :attr:`calibration` after initialisation.
 
-        Invalidates the gate_implementation cache for the affected operations/implementations/loci. Also invalidates
+        Invalidates the GateImplementation caches for the affected operations/implementations/loci. Also invalidates
         the cache for any factorizable gate implementation, if any of its locus components was affected.
 
         Args:
-            partial_calibration: data to be injected. Must have the same structure as ``self.calibration`` but does not
+            partial_calibration: data to be injected. Must have the same structure as :attr:`calibration` but does not
                 have to contain all operations/implementations/loci/values. Only the parts of the data that are
-                found will be merged into ``self.calibration`` (including any ``None`` values). ``self._cache`` will
+                found will be merged into :attr:`calibration` (including any ``None`` values). :attr:`_cache` will
                 be invalidated for the found operations/implementations/loci and only if the new calibration data
                 actually differs from the previous.
 
         """
+        # composite gates are always flushed (though we could only flush the ones whose member gate cal is changed!)
         self.composite_cache.flush()
+        # merge the calibration changes
         for op, op_data in partial_calibration.items():
             for impl, impl_data in op_data.items():
                 for locus, locus_data in impl_data.items():
@@ -326,13 +372,16 @@ class ScheduleBuilder:
                         and locus in self._cache[op][impl]
                         and _dicts_differ(prev_calibration, new_calibration)
                     ):
+                        # invalidate only the affected GateImplementations
                         del self._cache[op][impl][locus]
                         if self.op_table[op].factorizable:
-                            factorizable_cache = self._cache[op][impl].copy()
-                            set_locus = set(locus)
-                            for cache_locus in factorizable_cache:
-                                if set_locus.intersection(set(cache_locus)):
-                                    del self._cache[op][impl][cache_locus]
+                            # factorizable ops only have cal data for single-component loci,
+                            # but we also need to flush all loci that include the single-component locus
+                            locus_component = locus[0]
+                            # dict size cannot change while you iterate over it, hence the list of keys
+                            for cached_locus in list(self._cache[op][impl]):
+                                if locus_component in set(cached_locus):
+                                    del self._cache[op][impl][cached_locus]
 
     def validate_calibration(self) -> None:
         """Check that the calibration data matches the known quantum operations.
@@ -568,7 +617,7 @@ class ScheduleBuilder:
         *,
         use_priority_order: bool = False,
         strict_locus: bool = False,
-        priority_calibration: OILCalibrationData | None = None,
+        priority_calibration: OILCalibrationData | OICalibrationData | None = None,
     ) -> GateImplementation:
         """Provide an implementation for a quantum operation at a given locus.
 
@@ -585,10 +634,11 @@ class ScheduleBuilder:
                 1. The locus-specific priority defined in ``QuantumOp.defaults_for_locus[locus]`` if any.
                 2. The global priority order defined in :attr:`QuantumOp.implementations`.
             priority_calibration: Calibration data from which to load the calibration instead of the common calibration
-                data in :attr:`calibration`. If no calibration is found for the given implementation or
-                ``priority_calibration`` is ``None``, the common calibration is used. Any non-empty
-                values found in ``priority_calibration`` will be merged to the common calibration. Note:
-                using ``priority_calibration`` will prevent saving/loading via the cache.
+                data in :attr:`calibration`. Any non-None values found in ``priority_calibration``
+                will be merged to the common calibration.
+                For factorizable QuantumOps this is a mapping from single-qubit loci to their calibration data,
+                otherwise just the calibration data for a single locus.
+                Note: using ``priority_calibration`` will prevent caching.
 
         Returns:
             requested implementation
@@ -615,15 +665,15 @@ class ScheduleBuilder:
         strict_locus: bool = False,
     ) -> tuple[str, Locus]:
         """Find an implementation and locus for the given quantum operation instance compatible
-        with the calibration data.
+        with both the calibration data and the implementation and locus requested by the caller.
 
         Args:
             op: quantum operation
-            impl_name: Name of the implementation. ``None`` means use the highest-priority implementation for
-                which we have calibration data.
-            locus: locus of the operation
-            strict_locus: iff False, for non-symmetric implementations of symmetric ops the locus order may
-                be changed to an equivalent one if no calibration data is available for the requested locus order
+            impl_name: Name of the requested implementation. ``None`` means use the highest-priority
+                implementation for which we have calibration data.
+            locus: requested locus of the operation
+            strict_locus: Iff False, for non-symmetric implementations of symmetric ops the locus order may
+                be changed to an equivalent one if no calibration data is available for the requested locus order.
 
         Returns:
             chosen implementation name, locus
@@ -647,24 +697,26 @@ class ScheduleBuilder:
             calibration data available. If none can be found, returns None.
             """
             if not impl_class.needs_calibration():
+                # any locus is ok
+                # FIXME This is wrong for compositegates, see SW-1016
                 return given_locus
             if op.factorizable and len(given_locus) > 1:
+                # check delegated to subimplementations
                 return given_locus
             # find out which loci we need to check for cal data
             if op.symmetric:
+                # all locus orders are equivalent for perfectly calibrated symmetric ops, locus can be permuted
                 if impl_class.symmetric:
                     # Cal data for symmetric implementations uses always a sorted locus order.
                     loci = [tuple(sort_components(given_locus))]
                 elif strict_locus:
                     # If the operation is symmetric but implementation is not (e.g. fast flux CZ)
-                    # the locus order can be meaningful.
+                    # the locus order can be meaningful in practice.
                     # Users must be able to request implementations for any order of the locus, which may have
                     # independent cal data.
-                    # User requested this implementation, we assume they also want this particular locus.
                     loci = [given_locus]
                 else:
-                    # User did not request a specific implementation, so we assume they are fine
-                    # with any implementation and locus order. We pick the first locus order that has cal data.
+                    # User did not request a strict locus order, pick the first one that has cal data.
                     loci = list(itertools.permutations(given_locus))
             else:
                 # For non-symmetric ops the locus is always strict.
@@ -716,11 +768,29 @@ class ScheduleBuilder:
         impl_name: str | None,
         locus: Locus,
         strict_locus: bool = False,
-        priority_calibration: dict[str, Any] | None = None,
+        *,
+        priority_calibration: OILCalibrationData | OICalibrationData | None = None,
     ) -> GateImplementation:
         """Build a factory class for the given quantum operation, implementation and locus.
 
         The GateImplementations are built when they are first requested, and cached for later use.
+
+        The attributes :attr:`QuantumOp.factorizable`, :attr:`GateImplementation.needs_calibration` and whether
+        the implementation is a :class:`CompositeGate` interact in a nontrivial way, described in the table below.
+
+        .. list-table::
+           :header-rows: 1
+           :stub-columns: 1
+
+           * - composite / not composite
+             - factorizable
+             - not factorizable
+           * - needs_calibration
+             - not in use yet / ``measure.constant``
+             - ``cc_prx.prx_composite`` / ``prx.drag_crf``
+           * - not needs_calibration
+             - ``reset.conditional`` / not meaningful
+             - ``rz.prx_composite`` / ``rz.virtual``
 
         Args:
             op: quantum operation
@@ -729,10 +799,11 @@ class ScheduleBuilder:
             locus: locus of the operation
             strict_locus: iff False, for non-symmetric implementations of symmetric ops the locus order may
                 be changed if no calibration data is available for the requested locus order
-            priority_calibration: Calibration data from which to load the calibration instead of the common
-                calibration data. Priority calibration should be either a dict of the type `OILCalibrationData`,
-                i.e. containing the operation name, implementation name, and locus, or just a dict containing
-                the calibration data for the locus implied by the args `op`, `impl_name` and `locus`.
+            priority_calibration: Calibration data node from which to load the calibration instead of the common
+                calibration data. Only overrides the given parameters. For this to work, ``impl_name`` should be given,
+                since ``priority_calibration`` is implementation-specific.
+                For factorizable QuantumOps this is a mapping from single-qubit loci to their calibration data,
+                otherwise just the calibration data for a single locus.
 
         Returns:
             requested implementation
@@ -742,45 +813,73 @@ class ScheduleBuilder:
 
         """
         new_impl_name, new_locus = self._find_implementation_and_locus(op, impl_name, locus, strict_locus=strict_locus)
-
-        # use a cached factory if it exists and no priority calibration is used:
-        if priority_calibration is None:
+        # use caching if no priority calibration is used
+        if not priority_calibration:
+            # use a cached factory if it exists
             op_cache = self._cache.setdefault(op.name, {})
             impl_cache = op_cache.setdefault(new_impl_name, {})
             if factory := impl_cache.get(new_locus):
                 return factory
 
+        # find the calibration data
         impl_class = op.implementations[new_impl_name]
-        if impl_class.needs_calibration() and (not op.factorizable or (op.factorizable and len(new_locus) == 1)):
-            # find the calibration data
-            cal_data = self.get_calibration(op.name, new_impl_name, new_locus)
-            if priority_calibration:
-                if op.name in priority_calibration:
-                    # first check if full OILCalibrationData structure was given
-                    op_data = priority_calibration.get(op.name, {})
-                    prio_data = op_data.get(new_impl_name, {}).get(new_locus, {})
-                else:
-                    # if not assume just the data for this locus was given
-                    prio_data = priority_calibration
-                cal_data = merge_dicts(cal_data, prio_data, merge_nones=False) if prio_data else cal_data
-            validate_locus_calibration(cal_data, impl_class, op, new_impl_name, new_locus)
-        elif op.factorizable and len(new_locus) > 1 and priority_calibration:
-            # only calibration data a factorizable gate needs for a multi-qubit locus is possible prio calibration
-            # we propagate it to the gate implementation which should take care of handling it correctly
-            cal_data = priority_calibration
+        if op.factorizable and len(new_locus) > 1 and impl_class.may_have_calibration():
+            # E.g. measure.constant (needs_calibration), reset.conditional (composite, not needs_calibration)
+            # Currently there are no factorizable gates that are both composite and need calibration.
+            # For factorizable QuantumOps all the calibration data is for single-component loci,
+            # so priority_calibration is of the type OICalibrationData.
+            # Build (and possibly cache) the required single-component implementations, then
+            # use them to construct the full-locus implementation.
+            priority_calibration = priority_calibration or {}
+            factory = impl_class.construct_factorizable(
+                parent=op,
+                name=new_impl_name,
+                locus=new_locus,
+                sub_implementations={
+                    c: self._get_implementation(
+                        op,
+                        new_impl_name,
+                        (c,),
+                        priority_calibration={(c,): c_cal} if (c_cal := priority_calibration.get((c,))) else None,  # type: ignore
+                    )
+                    for c in new_locus
+                },
+                builder=self,
+            )
         else:
-            cal_data = {}
+            if impl_class.may_have_calibration():
+                # Either needs_calibration or is CompositeGate.
+                # Find the calibration data, which is all found under new_locus.
+                if impl_class.needs_calibration():
+                    cal_data = self.get_calibration(op.name, new_impl_name, new_locus)
+                else:
+                    # cal data optional
+                    try:
+                        cal_data = self.get_calibration(op.name, new_impl_name, new_locus)
+                    except ValueError:
+                        cal_data = {}
 
-        # construct the factory
-        factory = impl_class(
-            parent=op,
-            name=new_impl_name,
-            locus=new_locus,
-            calibration_data=cal_data,
-            builder=self,
-        )
-        # cache it if no priority_calibration was used
-        if priority_calibration is None:
+                if priority_calibration:
+                    if op.factorizable:
+                        # pick out the single-component locus
+                        priority_calibration = priority_calibration[new_locus]  # type: ignore[index]
+                    cal_data = merge_dicts(cal_data, priority_calibration, merge_nones=False)
+                validate_locus_calibration(cal_data, impl_class, op, new_impl_name, new_locus)
+            else:
+                # no cal data needed, e.g. rz.virtual
+                cal_data = {}
+
+            # construct the factory
+            factory = impl_class(
+                parent=op,
+                name=new_impl_name,
+                locus=new_locus,
+                calibration_data=cal_data,
+                builder=self,
+            )
+
+        # cache the factory if no priority_calibration was used
+        if not priority_calibration:
             impl_cache[new_locus] = factory
         return factory
 

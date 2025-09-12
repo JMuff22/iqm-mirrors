@@ -61,11 +61,11 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
     ``class MyGate(Measure_CustomWaveforms, i_wave=Something, q_wave=SomethingElse)``.
 
     The ``measure`` operation is factorizable, and its :attr:`arity` is 0, which together mean that it can operate
-    on loci of any dimensionality, but is calibrated only on single component loci. When the gate is constructed in the
-    ``len(locus) > 1``, case (e.g. ``builder.get_implementation('measure', ('QB1', 'QB2', 'QB3'))()``) the resulting
-    :class:`.TimeBox` is constructed from the calibrated single-component gates.
+    on loci of any length, but is calibrated only on single component loci. When the gate is constructed in the
+    ``len(locus) > 1`` case (e.g. ``builder.get_implementation('measure', ('QB1', 'QB2', 'QB3'))()``), the resulting
+    :class:`.TimeBox` is constructed from the calibrated single-component implementations.
 
-    For each measured component, the readout ``IQPulse`` will be modulated with the
+    For each measured component, the readout :class:`.IQPulse` will be modulated with the
     intermediate frequency (IF), computed as the difference between the readout
     frequency of that component and the probe line center frequency, and offset in phase
     by the readout phase of the component.
@@ -80,6 +80,7 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
         "frequency": Parameter("", "Readout pulse frequency", "Hz"),
         "phase": Parameter("", "Readout pulse phase", "rad"),
         "amplitude_i": Parameter("", "Readout channel I amplitude", ""),
+        # TODO do we really need these defaults? are they used anywhere?
         "amplitude_q": Setting(Parameter("", "Readout channel Q amplitude", ""), 0.0),
         "integration_length": Parameter("", "Integration length", "s"),
         "integration_weights_I": Setting(
@@ -105,36 +106,38 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
         self._time_traces: dict[tuple[str, float | None, float | None, str], TimeBox] = {}
         """Cache for :meth:`time_trace`."""
 
-        if len(locus) == 1:  # factorizable gates only need calibration on 1-loci
-            self._probe_line: ProbeChannelProperties = self.builder.channels[  # type: ignore[assignment]
-                self.builder.get_probe_channel(self.locus[0])
+        if len(locus) == 1:
+            # prepare the single-component measurement
+            probe_line: ProbeChannelProperties = builder.channels[  # type: ignore[assignment]
+                builder.get_probe_channel(locus[0])
             ]
-            c_freq = self._probe_line.center_frequency
-            if_freq = (calibration_data["frequency"] - c_freq) / self._probe_line.sample_rate
+            # readout duration is determined by the acquisition, probe pulses are truncated to fit this window
             self._duration = (
-                self._probe_line.duration_to_int_samples(
-                    self._probe_line.round_duration_to_granularity(
+                probe_line.duration_to_int_samples(
+                    probe_line.round_duration_to_granularity(
                         calibration_data["acquisition_delay"] + calibration_data["integration_length"]
                     )
                 )
-                + self._probe_line.integration_stop_dead_time
+                + probe_line.integration_stop_dead_time
             )
-
+            self._probe_offset = probe_line.integration_start_dead_time
+            # "duration" is only used by the probe pulse
             waveform_params = self.convert_calibration_data(
                 calibration_data,
-                {k: v for k, v in self.parameters.items() if k not in self.root_parameters or k == "duration"},
-                self._probe_line,
+                {k: v for k, v in self.parameters.items() if k not in self.root_parameters},
+                probe_line,
             )
+            # unconverted cal data that corresponds to a root param (not duration)
             root_params = {k: v for k, v in calibration_data.items() if k in self.root_parameters and k != "duration"}
+            # do some conversions TODO are these consistent?
+            root_params["integration_length"] = probe_line.duration_to_int_samples(root_params["integration_length"])
+            root_params["acquisition_delay"] = round(probe_line.duration_to_samples(root_params["acquisition_delay"]))
 
-            probe_instruction, acquisition_method = self._build_instructions(waveform_params, root_params, if_freq)
-            self._probe_instruction = probe_instruction
-            self._acquisition_method = acquisition_method
-            self._prio_calibration: OILCalibrationData | None = None
-        else:
-            # we need to store the possible cal_data == priority calibration in order to propagate it to the factored
-            # single-component measure calls in :meth:`probe_timebox`
-            self._prio_calibration = calibration_data or None
+            if_freq = (calibration_data["frequency"] - probe_line.center_frequency) / probe_line.sample_rate
+
+            self._probe_instruction, self._acquisition_method = self._build_instructions(
+                waveform_params, root_params, if_freq
+            )
 
     def _build_instructions(
         self, waveform_params: OILCalibrationData, root_params: OILCalibrationData, if_freq: float
@@ -160,7 +163,7 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
             modulation_frequency=if_freq,
         )
 
-        integration_length = self._probe_line.duration_to_int_samples(root_params["integration_length"])
+        integration_length = root_params["integration_length"]
         weights_i = root_params.get("integration_weights_I")
         weights_q = root_params.get("integration_weights_Q")
         if weights_i is not None and weights_i.size and weights_q is not None and weights_q.size:
@@ -195,16 +198,15 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
             )
 
         acquisition_type = root_params.get("acquisition_type", self.root_parameters["acquisition_type"].value)  # type: ignore[union-attr]
-        acquisition_delay = round(self._probe_line.duration_to_samples(root_params["acquisition_delay"]))
         acquisition_label = "TO_BE_REPLACED"
         if acquisition_type == "complex":
             acquisition_method = ComplexIntegration(
-                label=acquisition_label, delay_samples=acquisition_delay, weights=weights
+                label=acquisition_label, delay_samples=root_params["acquisition_delay"], weights=weights
             )
         elif acquisition_type == "threshold":
             acquisition_method = ThresholdStateDiscrimination(
                 label=acquisition_label,
-                delay_samples=acquisition_delay,
+                delay_samples=root_params["acquisition_delay"],
                 weights=weights,
                 threshold=root_params["integration_threshold"],
             )
@@ -243,12 +245,11 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
                 replacements = {"label": f"{self.locus[0]}__{label_key}"}
                 if feedback_key and isinstance(self._acquisition_method, ThresholdStateDiscrimination):
                     # TODO: use the actual ``feedback_key`` when AWGs support multiple feedback labels
-                    feedback_bit = f"{self.locus[0]}__{FEEDBACK_KEY}"
-                    replacements["feedback_signal_label"] = feedback_bit
+                    replacements["feedback_signal_label"] = f"{self.locus[0]}__{FEEDBACK_KEY}"
                 acquisitions = (replace(self._acquisition_method, **replacements),) if do_acquisition else ()  # type: ignore[arg-type]
                 multiplexed_iq = MultiplexedIQPulse(
-                    duration=self._probe_instruction.duration + self._probe_line.integration_start_dead_time,
-                    entries=((self._probe_instruction, self._probe_line.integration_start_dead_time),),
+                    duration=self._probe_instruction.duration + self._probe_offset,
+                    entries=((self._probe_instruction, self._probe_offset),),
                 )
                 readout_trigger = ReadoutTrigger(
                     duration=self._duration, probe_pulse=multiplexed_iq, acquisitions=acquisitions
@@ -286,12 +287,12 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
                         label=f"{self.__class__.__name__} on {self.locus}",
                     )
             else:
+                # factorizability: use the sub-implementations
                 # _skip_override used for child classes build on `Measure_CustomWaveforms` to not call `.probe_timebox`
                 # from the parent class, but from this class instead.
+                # TODO remove, make probe_timebox private or something.
                 probe_timeboxes = [
-                    self.builder.get_implementation(  # type: ignore[attr-defined]
-                        self.parent.name, (c,), impl_name=self.name, priority_calibration=self._prio_calibration
-                    ).probe_timebox(key, feedback_key, do_acquisition, _skip_override=True)
+                    self.sub_implementations[c].probe_timebox(key, feedback_key, do_acquisition, _skip_override=True)  # type: ignore[attr-defined]
                     for c in self.locus
                 ]
                 probe_timebox = functools.reduce(lambda x, y: x + y, probe_timeboxes)
@@ -446,10 +447,14 @@ class ProbePulse_CustomWaveforms(CustomIQWaveforms):
     With given :class:`.Waveform` waveform definitions ``Something`` and ``SomethingElse``,
     you may define a measurement implementation that uses them as follows:
     ``class MyGate(ProbePulse_CustomWaveforms, i_wave=Something, q_wave=SomethingElse)``.
+    The measurement :class:`.IQPulse` instruction will not be automatically modulated
+    by any frequency, so any modulations should be included in the I and Q waveforms themselves.
+
+    Due to device limitations this implementation also has to integrate the readout signal
+    (using arbitrary weights), even though it does not make much sense.
 
     Contrary to the ``Measure_CustomWaveforms`` class, this implementation acts on proble lines directly (i.e. its
-    ``locus`` is a single probe line). The measurement ``IQPulse`` instruction will not be automatically modulated
-    by any frequency, so any modulations should be included in the I and Q waveforms themselves.
+    ``locus`` is a single probe line).
     """
 
     root_parameters = {
@@ -465,8 +470,8 @@ class ProbePulse_CustomWaveforms(CustomIQWaveforms):
         self, parent: QuantumOp, name: str, locus: Locus, calibration_data: OILCalibrationData, builder: ScheduleBuilder
     ):
         super().__init__(parent, name, locus, calibration_data, builder)
-        self._probe_line: ProbeChannelProperties = self.builder.channels[  # type: ignore[assignment]
-            self.builder.component_channels[self.locus[0]]["readout"]
+        self._probe_line: ProbeChannelProperties = builder.channels[  # type: ignore[assignment]
+            builder.component_channels[locus[0]]["readout"]
         ]
         self._duration = (
             self._probe_line.duration_to_int_samples(
@@ -479,7 +484,7 @@ class ProbePulse_CustomWaveforms(CustomIQWaveforms):
 
         waveform_params = self.convert_calibration_data(
             calibration_data,
-            {k: v for k, v in self.parameters.items() if k not in self.root_parameters or k == "duration"},
+            {k: v for k, v in self.parameters.items() if k not in self.root_parameters},
             self._probe_line,
         )
         root_params = {k: v for k, v in calibration_data.items() if k in self.root_parameters and k != "duration"}
@@ -602,8 +607,8 @@ class ProbePulse_CustomWaveforms_noIntegration(CustomIQWaveforms):
         """Cache for :meth:`probe_timebox`."""
 
         if len(locus) == 1:  # factorizable gates only need calibration on 1-loci
-            self._probe_line: ProbeChannelProperties = self.builder.channels[  # type: ignore[assignment]
-                self.builder.get_probe_channel(self.locus[0])
+            self._probe_line: ProbeChannelProperties = builder.channels[  # type: ignore[assignment]
+                builder.get_probe_channel(locus[0])
             ]
             c_freq = self._probe_line.center_frequency
             if_freq = (calibration_data["frequency"] - c_freq) / self._probe_line.sample_rate

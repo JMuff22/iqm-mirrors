@@ -100,7 +100,7 @@ class FluxPulseGate(GateImplementation):
         builder: ScheduleBuilder,
     ):
         super().__init__(parent, name, locus, calibration_data, builder)
-        duration = calibration_data["duration"]
+        duration = calibration_data["duration"]  # shared between all pulses
         flux_pulses = {}
 
         def build_flux_pulse(waveform_class: type[Waveform], component_name: str, cal_node_name: str) -> None:
@@ -110,14 +110,11 @@ class FluxPulseGate(GateImplementation):
                 calibration_data[cal_node_name],
                 self.parameters[cal_node_name],  # type: ignore[arg-type]
                 builder.channels[flux_channel],
-                duration,
+                duration=duration,
             )
-            # TODO convert_calibration_data should be able to do this too
-            n_samples = builder.channels[flux_channel].duration_to_int_samples(duration) if duration > 0 else 0
-            params["n_samples"] = n_samples
             amplitude = params.pop("amplitude")
             flux_pulses[flux_channel] = FluxPulse(
-                duration=n_samples,
+                duration=params["n_samples"],
                 wave=waveform_class(**params),
                 scale=amplitude,
             )
@@ -283,8 +280,7 @@ class CouplerFluxPulseQubitACStarkPulseGate(GateImplementation):
         builder: ScheduleBuilder,
     ):
         super().__init__(parent, name, locus, calibration_data, builder)
-
-        duration = calibration_data["duration"]
+        duration = calibration_data["duration"]  # shared between all pulses
         flux_pulses = {}
         qubit_drive_pulses = {}
         rz = calibration_data["rz"]
@@ -296,13 +292,11 @@ class CouplerFluxPulseQubitACStarkPulseGate(GateImplementation):
                 calibration_data[cal_node_name],
                 self.parameters[cal_node_name],  # type: ignore[arg-type]
                 builder.channels[flux_channel],
-                duration,
+                duration=duration,
             )
-            n_samples = builder.channels[flux_channel].duration_to_int_samples(duration) if duration > 0 else 0
-            params["n_samples"] = n_samples
             amplitude = params.pop("amplitude")
             flux_pulses[flux_channel] = FluxPulse(
-                duration=n_samples,
+                duration=params["n_samples"],
                 wave=waveform_class(**params),
                 scale=amplitude,
             )
@@ -314,10 +308,8 @@ class CouplerFluxPulseQubitACStarkPulseGate(GateImplementation):
                 calibration_data[cal_node_name],
                 self.parameters[cal_node_name],  # type: ignore[arg-type]
                 builder.channels[drive_channel],
-                duration,
+                duration=duration,
             )
-            n_samples = builder.channels[drive_channel].duration_to_int_samples(duration) if duration > 0 else 0
-            params["n_samples"] = n_samples
             params["phase_increment"] = rz[component_name]
             qubit_drive_pulses[drive_channel] = self._ac_stark_pulse(**params)
 

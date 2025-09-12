@@ -350,11 +350,6 @@ class CircuitOperationList(list):
         qubit_names = self.qubits
         if name not in self.table:
             raise KeyError(f"QuantumOp with name {name} is not in the gate definitions table.")
-        arity = self.table[name].arity
-        if len(locus_indices) != len(set(locus_indices)):
-            raise ValueError("Repeated locus indices.")
-        if arity and arity != len(locus_indices):  # arity = 0 is barrier and measure
-            raise ValueError(f"Operation {name} has {arity=} but {len(locus_indices)} target qubits were provided.")
 
         try:
             locus = tuple(qubit_names[idx] for idx in locus_indices)

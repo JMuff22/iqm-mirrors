@@ -18,7 +18,7 @@ The reset operation is a non-unitary quantum channel that sets the state of a qu
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 from exa.common.data.parameter import Parameter
 from exa.common.qcm_data.chip_topology import ChipTopology
@@ -53,7 +53,7 @@ class Reset_Conditional(CompositeGate):
     blocked.
     """
 
-    registered_gates = ["measure"]
+    registered_gates = ("measure", "cc_prx")
 
     def _call(self) -> TimeBox:  # type: ignore[override]
         # find locus components that are resettable via conditional reset
@@ -120,15 +120,8 @@ class Reset_Wait(GateImplementation):
         if len(self.locus) == 1:
             waits_box = self.builder.wait(self.locus, self.calibration_data["duration"], rounding=True)
         else:
-            prio_calibration = self.calibration_data if self.calibration_data else None
-            waits_box = TimeBox.composite(
-                [
-                    self.builder.get_implementation(  # type: ignore[attr-defined]
-                        self.parent.name, (q,), impl_name=self.name, priority_calibration=prio_calibration
-                    ).wait_box()
-                    for q in self.locus
-                ]
-            )
+            # factorizability: use the sub-implementations
+            waits_box = TimeBox.composite([self.sub_implementations[c].wait_box() for c in self.locus])  # type: ignore[attr-defined]
         return waits_box
 
     def _call(self) -> TimeBox:
@@ -147,14 +140,13 @@ class Reset_Wait(GateImplementation):
         return TimeBox.composite([waits_box])
 
     def duration_in_seconds(self) -> float:
-        return max(
-            self.builder.get_implementation(self.parent.name, (q,), impl_name=self.name).calibration_data["duration"]
-            for q in self.locus
-        )
+        if len(self.locus) == 1:
+            return self.calibration_data["duration"]
+        return max(self.sub_implementations[c].calibration_data["duration"] for c in self.locus)
 
     @classmethod
     def get_custom_locus_mapping(
-        cls, chip_topology: ChipTopology, component_to_channels: dict[str, Iterable[str]]
+        cls, chip_topology: ChipTopology, component_to_channels: Mapping[str, Iterable[str]]
     ) -> dict[tuple[str, ...] | frozenset[str], tuple[str, ...]] | None:
         """Supported loci: all components that have channels."""
         return {(c,): (c,) for c in chip_topology.all_components}
