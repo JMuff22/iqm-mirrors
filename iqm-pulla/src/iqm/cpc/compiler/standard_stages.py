@@ -763,7 +763,7 @@ def clean_schedule(schedules: Iterable[Schedule], builder: ScheduleBuilder) -> l
 @compiler_pass
 def build_playlist(schedules: Iterable[Schedule], builder: ScheduleBuilder) -> tuple[Playlist, dict[str, Any]]:
     """Build the playlist from the schedules."""
-    playlist = builder.build_playlist(schedules)
+    playlist = builder.build_playlist(schedules)[0]
     return playlist, {"schedules": schedules}  # save the schedules for building settings, debugging, etc
 
 
