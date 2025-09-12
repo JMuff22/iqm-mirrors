@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING
 import warnings
 
 import numpy as np
+from qiskit.providers import BackendV2
 from qiskit.quantum_info import Statevector
 from qiskit_aer import AerSimulator
 
@@ -330,15 +331,25 @@ class SamplerSimulation(SamplerBackend):
     """A sampler that simulates the QAOA circuit in :mod:`qiskit`.
 
     Currently the only simulator we use is the :class:`~qiskit_aer.AerSimulator`, but :class:`SamplerSimulation` is
-    defined to allow the use of other simulators too.
+    defined to allow the use of other simulators too. Some simulators may need the circuit to be transpiled, so
+    optionally a string describing the transpiler can be provided.
 
     Args:
         simulator: A simulator, (currently) assumed to be an object of class :class:`~qiskit_aer.AerSimulator`.
+        transpiler: A string describing the transpilation method to use (if applicable).
 
     """
 
-    def __init__(self, simulator: AerSimulator = AerSimulator(method="statevector")) -> None:
+    # The type hint suggests that `simulator` can be any `BackendV2`, but it should be a simulator, not a real QC.
+    # `BackendV2` is the nearest common ancestor of `AerSimulator` and `IQMFakeBackend`, which are the two main
+    # backends that we might want use here, so it's used as a type hint.
+    def __init__(
+        self,
+        simulator: BackendV2 = AerSimulator(method="statevector"),
+        transpiler: str | None = None,
+    ) -> None:
         self.simulator = simulator
+        self.transpiler = transpiler
 
     def sample(self, qaoa_object: QAOA, shots: int) -> dict[str, int]:
         """Samples from the QAOA using a simulation.
@@ -351,7 +362,7 @@ class SamplerSimulation(SamplerBackend):
             A dictionary whose keys are the measured bitstrings and values their frequencies in the results.
 
         """
-        qc = qiskit_circuit(qaoa_object, measurements=True)  # type: ignore[arg-type]
+        qc = transpiled_circuit(qaoa_object, backend=self.simulator, transpiler=self.transpiler)  # type: ignore[arg-type]
         job = self.simulator.run(qc, shots=shots)
         counts_from_job = job.result().get_counts()
         # Qiskit somehow reverses the order of the bitstrings.

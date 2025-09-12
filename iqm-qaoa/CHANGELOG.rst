@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.11.0 (2025-07-23)
+===========================
+
+Bug fixes
+---------
+
+- Add optional transpilation step to `SamplerSimulation`, so that it can accept more simulators than just `AerSimulator`, e.g., our `IQMFakeApollo`.
+
 Version 1.10.0 (2025-07-21)
 ===========================
 
