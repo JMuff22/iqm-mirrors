@@ -51,8 +51,13 @@ from typing import Literal
 
 import cvxpy as cp
 from dimod import BinaryQuadraticModel
-from iqm.applications.graph_utils import _generate_desired_graph
-from iqm.applications.qubo import QUBOInstance, relabel_graph_nodes
+from iqm.applications.graph_utils import (
+    EDGE_ATTR_PRIORITY,
+    _generate_desired_graph,
+    _get_attr_with_priority,
+    relabel_graph_nodes,
+)
+from iqm.applications.qubo import QUBOInstance
 import networkx as nx
 import numpy as np
 from scipy.linalg import eigh
@@ -161,27 +166,34 @@ class WeightedMaxCutInstance(QUBOInstance):
     """
 
     def __init__(self, graph: nx.Graph, break_z2: bool = False) -> None:
-        if set(graph.nodes) != set(range(len(graph))):
-            raise ValueError("Graph nodes should be labelled by integers starting with 0.")
-        for n1, n2, data in graph.edges(data=True):
-            if "weight" not in data:
-                raise ValueError(f"The edge between nodes {n1} and {n2} is missing the 'weight' attribute.")
-            if not isinstance(data["weight"], float | int):
-                raise TypeError(
-                    f"The edge between nodes {n1} and {n2} has a 'weight' of type {type(data['weight']).__name__}, "
-                    f"expected ``float`` or ``int``."
+        self._graph, self.orig_to_new_labels, self.new_to_orig_labels = relabel_graph_nodes(graph)
+
+        qubo_mat = np.zeros((self._graph.number_of_nodes(), self._graph.number_of_nodes()))
+
+        for n1, n2, data in self._graph.edges(data=True):
+            value = _get_attr_with_priority(data, EDGE_ATTR_PRIORITY)
+
+            if value is None:
+                raise ValueError(
+                    f"The edge between nodes {self.new_to_orig_labels[n1]} and {self.new_to_orig_labels[n2]} is missing"
+                    f" one of the required attributes ({', '.join(EDGE_ATTR_PRIORITY)})."
                 )
 
-        self._graph = graph
-        self._break_z2 = break_z2
+            if not isinstance(value, (float, int)):
+                raise TypeError(
+                    f"The edge between nodes {self.new_to_orig_labels[n1]} and {self.new_to_orig_labels[n2]} has a "
+                    f"value of type {type(value).__name__}, expected ``float`` or ``int``."
+                )
 
-        qubo_mat = np.zeros((self._graph.number_of_nodes(), self._graph.number_of_nodes()), dtype=int)
-        for i, j, edge_data in self._graph.edges(data=True):
-            qubo_mat[i, j] += 2 * edge_data["weight"]
-            qubo_mat[i, i] += -edge_data["weight"]
-            qubo_mat[j, j] += -edge_data["weight"]
+            qubo_mat[n1, n2] += 2 * value
+            qubo_mat[n1, n1] += -value
+            qubo_mat[n2, n2] += -value
+
         bqm = BinaryQuadraticModel(qubo_mat, vartype="BINARY")
+
         super().__init__(bqm)
+
+        self._break_z2 = break_z2
         if self._break_z2:
             node_to_fix = max(bqm.variables, key=bqm.degree)
             self.fix_variables({node_to_fix: 1})

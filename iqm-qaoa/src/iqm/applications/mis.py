@@ -48,8 +48,13 @@ from typing import Literal
 
 from dimod import BinaryQuadraticModel, ConstrainedQuadraticModel
 from dimod.typing import Variable
-from iqm.applications.graph_utils import _generate_desired_graph
-from iqm.applications.qubo import ConstrainedQuadraticInstance, relabel_graph_nodes
+from iqm.applications.graph_utils import (
+    NODE_ATTR_PRIORITY,
+    _generate_desired_graph,
+    _get_attr_with_priority,
+    relabel_graph_nodes,
+)
+from iqm.applications.qubo import ConstrainedQuadraticInstance
 import networkx as nx
 import numpy as np
 
@@ -254,20 +259,28 @@ class MaximumWeightISInstance(ISInstance):
     """
 
     def __init__(self, graph: nx.Graph, penalty: float | int) -> None:
-        # Check that all nodes of the graph have a correct weight assigned.
-        for node, data in graph.nodes(data=True):
-            if "weight" not in data:
-                raise ValueError(f"Node {node} is missing the 'weight' attribute.")
-            if not isinstance(data["weight"], float | int):
-                raise TypeError(
-                    f"Node {node} has a 'weight' of type {type(data['weight']).__name__}, expected"
-                    f" ``float`` or ``int``."
-                )
+        self._graph, self.orig_to_new_labels, self.new_to_orig_labels = relabel_graph_nodes(graph)
 
         # Define the objective function to minimize
-        obj_matrix = np.zeros((graph.number_of_nodes(), graph.number_of_nodes()))
-        for node in graph.nodes():
-            obj_matrix[node, node] = -graph.nodes[node]["weight"]
+        obj_matrix = np.zeros((self._graph.number_of_nodes(), self._graph.number_of_nodes()))
+
+        for node, data in self._graph.nodes(data=True):
+            value = _get_attr_with_priority(data, NODE_ATTR_PRIORITY)
+
+            if value is None:
+                raise ValueError(
+                    f"The node {self.new_to_orig_labels[node]} is missing one of the required attributes "
+                    f"({', '.join(NODE_ATTR_PRIORITY)})."
+                )
+
+            if not isinstance(value, (float, int)):
+                raise TypeError(
+                    f"The local term at node {self.new_to_orig_labels[node]} has a "
+                    f"value of type {type(value).__name__}, expected ``float`` or ``int``."
+                )
+
+            obj_matrix[node, node] = -value
+
         objective = BinaryQuadraticModel(obj_matrix, vartype="BINARY")
 
         super().__init__(graph, penalty, objective)

@@ -22,10 +22,57 @@
 """Contains utility functions regarding graphs which are generic enough that they deserve having their own module."""
 
 from collections.abc import Callable
-from typing import Literal
+from typing import Any, Literal
 
 import networkx as nx
 import numpy as np
+
+# Priority lists for node and edge attributes
+NODE_ATTR_PRIORITY: tuple[str, ...] = ("bias", "weight", "field", "value", "h")
+EDGE_ATTR_PRIORITY: tuple[str, ...] = ("bias", "weight", "coupling", "interaction", "J")
+
+
+def _get_attr_with_priority(data: dict[str, int | float], priority_list: tuple[str, ...]) -> int | float | None:
+    """Return the first attribute found in data according to priority_list, defaulting to 0.
+
+    The input data is meant to be a dictionary of all attributes of a graph node or edge. In most realistic use cases it
+    will have just one entry.
+
+    Args:
+        data: The dictionary containing the node / edge data to check.
+        priority_list: The list of strings defining the priority in which the node / edge data should be retrieved.
+
+    Returns:
+        The value of the first found attribute.
+
+    """
+    for attr in priority_list:
+        if attr in data:
+            return data[attr]
+    return None
+
+
+def relabel_graph_nodes(graph: nx.Graph) -> tuple[nx.Graph, dict[Any, int], dict[int, Any]]:
+    """Map original node labels of the :class:`~networkx.Graph` to new ones between 0 and `graph.number_of_nodes` - 1.
+
+    Creates two dictionaries that keep track of the mapping between original labels and new labels numbered between 0
+    and `graph.number_of_nodes` - 1.
+
+    Args:
+        graph: The graph whose nodes should be relabeled.
+
+    Returns:
+        A tuple containing the input graph with relabeled nodes and two dictionaries containing the mapping from old
+        labels to new and vice versa.
+
+    """
+    orig_to_new_labels = {orig: new for new, orig in enumerate(graph.nodes())}
+    new_to_orig_labels = dict(enumerate(graph.nodes()))
+    if set(graph.nodes) != set(range(len(graph))):
+        re_labeled_graph = nx.relabel_nodes(graph, orig_to_new_labels)
+    else:
+        re_labeled_graph = graph
+    return re_labeled_graph, orig_to_new_labels, new_to_orig_labels
 
 
 def _generate_desired_graph(

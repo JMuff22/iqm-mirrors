@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.22.0 (2025-09-01)
+===========================
+
+Features
+--------
+
+* Creates a list of possible names of edge / node attributes and when a graph is used to instantiate certain problem classes, it goes through the list of names and looks for these attributes in the graph.
+* Puts the needed helper functions (and constants) into a separate module ``graph_utils.py``.
+* Move the function ``relabel_graph_nodes`` from ``qubo.py`` into ``graph_utils.py``.
+
 Version 1.21.0 (2025-09-01)
 ===========================
 
