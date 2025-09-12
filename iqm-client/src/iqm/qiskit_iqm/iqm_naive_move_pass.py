@@ -99,6 +99,7 @@ class IQMNaiveResonatorMoving(TransformationPass):
         iqm_circuit = IQMClientCircuit(
             name="Transpiling Circuit",
             instructions=tuple(serialize_instructions(circuit, self.idx_to_component)),
+            metadata=None,
         )
         try:
             routed_iqm_circuit = transpile_insert_moves(
