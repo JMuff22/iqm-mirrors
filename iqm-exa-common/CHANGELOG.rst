@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 26.6 (2025-03-21)
+=========================
+
+Features
+********
+
+* Rename QPU chip types, based on either "crystal" or "star" architecture and number of qubits. For example,
+  "crystal_5" or "star_6". For "mini" chips, like "mini_crystal_20", the number is not based on the actual number
+  of qubits but to the chip it's trying to "minimize" instead, like "crystal_20". :issue:`SW-1059`
+
 Version 26.5 (2025-03-19)
 =========================
 
