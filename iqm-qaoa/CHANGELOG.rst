@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 1.13.0 (2025-07-28)
+===========================
+
+Bug fixes
+---------
+
+- Fix type hints in `sn_router`, so that it accepts any `QPU` (it still checks if its layout has 2D integer coordinates).
+- Add a test for `sn_router` with a fake backend.
+
 Version 1.12.0 (2025-07-24)
 ===========================
 
