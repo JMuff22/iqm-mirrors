@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: iqm-benchmarks
-Version: 2.44
+Version: 2.45
 Summary: A package for implementation of Quantum Characterization, Verification and Validation (QCVV) techniques on IQM's hardware at gate level abstraction
 Author-email: IQM Finland Oy <developers@meetiqm.com>, Adrian Auer <adrian.auer@meetiqm.com>, Raphael Brieger <raphael.brieger@meetiqm.com>, Alessio Calzona <alessio.calzona@meetiqm.com>, Pedro Figueroa Romero <pedro.romero@meetiqm.com>, Amin Hosseinkhani <amin.hosseinkhani@meetiqm.com>, Miikka Koistinen <miikka@meetiqm.com>, Nadia Milazzo <nadia.milazzo@meetiqm.com>, Vicente Pina Canelles <vicente.pina@meetiqm.com>, Aniket Rath <aniket.rath@meetiqm.com>, Jami Rönkkö <jami@meetiqm.com>, Stefan Seegerer <stefan.seegerer@meetiqm.com>
 Project-URL: Homepage, https://github.com/iqm-finland/iqm-benchmarks
@@ -63,7 +63,7 @@ Below is a list of the benchmarks currently available in the suite:
 * Gates / Layers:
   - Standard Clifford Randomized Benchmarking [[Phys. Rev. A 85, 042311](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.85.042311) (2012)]
   - Interleaved Randomized Benchmarking [[Phys. Rev. Lett. 109, 080505](https://doi.org/10.1103/PhysRevLett.109.080505) (2012)]
-  - Compressive Gate Set Tomography [[PRX Quantum 4, 010325](https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.4.010325) (2023)]
+  - Compressive Gate Set Tomography [[PRX Quantum 4, 010325](https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.4.010325) (2023)] (Optional dependencies required)
   - Mirror Randomized Benchmarking [[Phys. Rev. Lett. 129, 150502](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.129.150502) (2022)]
   - Error Per Layered Gate [[arXiv:2311.05933 [quant-ph]](https://arxiv.org/abs/2311.05933) (2023)]
 * Holistic:
