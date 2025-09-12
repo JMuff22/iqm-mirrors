@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.7.0 (2025-07-09)
+==========================
+
+Features
+--------
+
+- Normalize all line endings to LF. No functional changes.
+
 Version 1.6.0 (2025-06-25)
 ==========================
 
