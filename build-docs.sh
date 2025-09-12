@@ -42,8 +42,27 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "Installing from spec: '${FULL_PACKAGE_SPEC}'"
-uv pip install "${FULL_PACKAGE_SPEC}"
+echo "Installing from spec: '${FULL_PACKAGE_SPEC}' version ${VERSION}"
+
+# For versioned builds, install the specific version
+if [ "$VERSION" != "latest" ]; then
+  # Extract base package name and extras separately
+  if [[ "$FULL_PACKAGE_SPEC" == *"["* ]]; then
+    # Package has extras like iqm-client[qiskit,cirq,cli]
+    BASE_NAME="${FULL_PACKAGE_SPEC%%\[*}"
+    EXTRAS="${FULL_PACKAGE_SPEC#*\[}"
+    VERSIONED_SPEC="${BASE_NAME}==${VERSION}[${EXTRAS}"
+  else
+    # Simple package name without extras
+    VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${VERSION}"
+  fi
+  echo "Installing versioned package: ${VERSIONED_SPEC}"
+  uv pip install "${VERSIONED_SPEC}"
+else
+  # For latest builds, install the latest version
+  echo "Installing latest version: ${FULL_PACKAGE_SPEC}"
+  uv pip install "${FULL_PACKAGE_SPEC}"
+fi
 
 if [ -f "${DOCS_SOURCE_DIR}/requirements.txt" ]; then
   echo "Installing documentation-specific requirements..."
