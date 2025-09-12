@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.24.0 (2025-09-04)
+===========================
+
+Bugfix
+--------
+
+- Make ``mypy`` type checking stricter by checking a couple extra optional things.
+- Make ``ruff`` linting stricter by adding a couple extra things to check.
+- Make ``ruff`` linting stricter by removing some per-file ignores.
+
 Version 1.23.0 (2025-09-03)
 ===========================
 

@@ -34,7 +34,7 @@ from qiskit import QuantumCircuit
 
 
 class RoutingStar(Routing):
-    """This class represents a routing of a QAOA phase separator on the star topology.
+    """Routing of a QAOA phase separator on the star topology.
 
     The main difference from the parent class :class:`~iqm.qaoa.transpiler.routing.Routing` is that :class:`RoutingStar`
     doesn't use :class:`~iqm.qaoa.transpiler.routing.Layer` for its layers. The layers in :class:`RoutingStar` are much
@@ -55,6 +55,7 @@ class RoutingStar(Routing):
 
     @property
     def layers(self) -> list[tuple[str, HardQubit]]:
+        """The list of layers of the star routing object."""
         return self._star_layers
 
     def apply_move_in(self, qubit: HardQubit) -> None:
@@ -174,7 +175,7 @@ class RoutingStar(Routing):
         # Prepare uniform superposition.
         qiskit_circ.h(mapping.hard2log.keys())
 
-        for gamma, beta in zip(gammas, betas):  # Each pair of ``gamma, beta`` corresponds to one QAOA layer.
+        for gamma, beta in zip(gammas, betas, strict=True):  # Each pair of ``gamma, beta`` corresponds to a QAOA layer.
             # Apply phase separator.
             for op_type, qubit in layers:
                 if op_type == "int":
@@ -301,7 +302,8 @@ def star_router(problem_bqm: BinaryQuadraticModel, qpu: StarQPU) -> RoutingStar:
 
     # We need to create a partial initial mapping that leaves the central resonator unassigned.
     available_hard_qubits = qpu.qubits - {0}  # The central resonator isn't available as a qubit for initial mapping.
-    partial_initial_mapping = dict(zip(available_hard_qubits, bqm.variables))
+    # The zip is not ``strict`` because there might be less variables than ``available_hard_qubits`` and that's fine.
+    partial_initial_mapping = dict(zip(available_hard_qubits, bqm.variables, strict=False))
     initial_mapping = Mapping(qpu, bqm, partial_initial_mapping)
     route = RoutingStar(bqm, qpu, initial_mapping)
 
