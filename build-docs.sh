@@ -74,7 +74,8 @@ python -m sphinx -b html -j auto "${DOCS_SOURCE_DIR}" "${BUILD_OUTPUT_DIR}"
 
 # Clean up unnecessary build artifacts
 echo "Cleaning up build artifacts..."
-rm -rf "${BUILD_OUTPUT_DIR}/jupyter_execute"
+rm -rfv "${BUILD_OUTPUT_DIR}/jupyter_execute"
+rm -rfv ""./_site/${BASE_PACKAGE_NAME}/jupyter_execute"
 find "${BUILD_OUTPUT_DIR}" -type d -name ".doctrees" -exec rm -rf {} + 2>/dev/null || true
 find "${BUILD_OUTPUT_DIR}" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
