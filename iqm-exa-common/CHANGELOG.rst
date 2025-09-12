@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 26.10 (2025-04-07)
+==========================
+
+Features
+--------
+
+- Fix package version in published docs footers, :issue:`SW-1392`. 
+
 Version 26.9 (2025-04-03)
 =========================
 
