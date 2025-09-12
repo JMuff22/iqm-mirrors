@@ -1,0 +1,8 @@
+iqm-data-definitions,2.10
+iqm-exa-common,26.2
+iqm-station-control-client,9.0
+iqm-pulse,9.1
+iqm-pulla[qiskit,qir],8.0
+iqm-client[qiskit,cirq,cli],29.0
+iqm-benchmarks[docs,mgst],2.39
+iqm-qaoa,1.2.0
