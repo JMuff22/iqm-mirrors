@@ -30,10 +30,21 @@ jobs:
 
       - name: Build documentation for all packages
         run: |
-          while IFS=, read -r package_spec _ || [[ -n "$package_spec" ]]; do
+          while IFS= read -r line || [[ -n "$line" ]]; do
             # Trim leading/trailing whitespace and skip comments/empty lines
-            package_spec=$(echo "$package_spec" | xargs)
-            [[ "$package_spec" =~ ^# ]] || [[ -z "$package_spec" ]] && continue
+            line=$(echo "$line" | xargs)
+            [[ "$line" =~ ^# ]] || [[ -z "$line" ]] && continue
+            
+            # Find the last comma to split package spec from version
+            # This handles packages with extras like: iqm-pulla[qiskit,qir],10.1.0
+            last_comma_pos=${line%,*}
+            if [ "$last_comma_pos" = "$line" ]; then
+              # No comma found, use entire line as package spec
+              package_spec="$line"
+            else
+              # Extract package spec (everything before the last comma)
+              package_spec="$last_comma_pos"
+            fi
             
             # Extract the base name (e.g., 'iqm-client' from 'iqm-client[extras]')
             base_name=${package_spec%%\[*}

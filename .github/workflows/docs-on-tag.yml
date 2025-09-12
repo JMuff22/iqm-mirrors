@@ -5,7 +5,16 @@ name: Build and Deploy Versioned Docs
 on:
   push:
     tags:
+      - '*/v*'
       - '*/*'
+  
+  # Allow manual triggering with a specific tag
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build docs for (e.g., iqm-pulla/v9.0.0)'
+        required: true
+        type: string
 
 jobs:
   build-and-deploy:
@@ -30,7 +39,13 @@ jobs:
 
       - name: Build documentation from tag
         run: |
-          TAG="${{ github.ref_name }}"
+          # Use manual input tag if provided, otherwise use the pushed tag
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          
           BASE_PACKAGE_NAME=$(echo "$TAG" | awk -F'/' '{print $1}')
           VERSION=$(echo "$TAG" | awk -F'/' '{print $2}')
           
@@ -38,7 +53,12 @@ jobs:
           
           # Find the full package specification (e.g., 'iqm-client[extras]') from packages.txt
           # This makes the workflow generic.
-          FULL_PACKAGE_SPEC=$(grep "^${BASE_PACKAGE_NAME}" packages.txt | cut -d',' -f1 | xargs)
+          FULL_PACKAGE_SPEC=$(grep "^${BASE_PACKAGE_NAME}" packages.txt | head -1)
+          
+          # Extract package spec by finding the last comma (handles extras correctly)
+          if [[ "$FULL_PACKAGE_SPEC" == *","* ]]; then
+            FULL_PACKAGE_SPEC="${FULL_PACKAGE_SPEC%,*}"
+          fi
 
           if [ -z "$FULL_PACKAGE_SPEC" ]; then
             echo "::error::Could not find package spec for '${BASE_PACKAGE_NAME}' in packages.txt"
