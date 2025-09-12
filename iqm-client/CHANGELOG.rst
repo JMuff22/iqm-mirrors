@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 29.12.0 (2025-08-08)
+============================
+
+Features
+--------
+
+- Minimal changes needed to support Qiskit version 1.3 and version 1.4. :issue:`SW-944`.
+
 Version 29.11.0 (2025-08-07)
 ============================
 
