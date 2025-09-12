@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.6.0 (2025-08-20)
+==========================
+
+Bug fixes
+---------
+
+- Add explicit cross-component requirements
+
 Version 9.5.0 (2025-08-11)
 ==========================
 
