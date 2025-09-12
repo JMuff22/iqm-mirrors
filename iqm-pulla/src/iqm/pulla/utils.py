@@ -15,7 +15,7 @@
 """Utility functions for IQM Pulla."""
 
 from collections import namedtuple
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Hashable, Iterable, Sequence, Set
 from dataclasses import replace
 from itertools import chain
 from typing import Any
@@ -493,7 +493,7 @@ def find_circuit_boundary(
     circuit_components: set[str] | frozenset[str],
     circuit_couplers: set[str],
     device: ChipTopology,
-) -> tuple[set[str], set[str]]:
+) -> tuple[Set[str], Set[str]]:
     """Determine the boundary of a circuit executed on the QPU.
 
     See :class:`.CircuitBoundaryMode` for the definitions of the circuit boundaries.

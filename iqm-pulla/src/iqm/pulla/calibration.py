@@ -18,7 +18,6 @@ from copy import deepcopy
 import logging
 import uuid
 
-from exa.common.data.value import ObservationValue
 from iqm.pulla.interface import CalibrationSet, CalibrationSetId
 from iqm.pulla.utils import calset_from_observations
 from iqm.station_control.client.iqm_server.iqm_server_client import IqmServerClient
@@ -38,7 +37,7 @@ class CalibrationDataProvider:
         self._calibration_sets: dict[CalibrationSetId, CalibrationSet] = {}
 
     def get_calibration_set(self, cal_set_id: CalibrationSetId) -> CalibrationSet:
-        """Get the calibration set from the database and cache it."""
+        """Get the calibration set contents from the database and cache it."""
         logger.debug("Get the calibration set from the database: cal_set_id=%s", cal_set_id)
         try:
             if cal_set_id not in self._calibration_sets:
@@ -48,20 +47,21 @@ class CalibrationDataProvider:
         except Exception as e:
             raise CalibrationDataFetchException("Could not fetch calibration set from the database.") from e
 
-    def get_latest_calibration_set(self, chip_label) -> tuple[CalibrationSet, CalibrationSetId]:
-        """Get the latest calibration set id for chip label from the database."""
+    def get_latest_calibration_set(self, chip_label: str) -> tuple[CalibrationSet, CalibrationSetId]:
+        """Get the latest calibration set id for ``chip_label`` from the database, return it and the set contents."""
         logger.debug("Get the latest calibration set for chip label: chip_label=%s", chip_label)
         try:
             if isinstance(self._station_control, IqmServerClient):
                 latest_cal_set_id = self._station_control.get_latest_calibration_set_id(chip_label)
-                latest_calibration_set = self.get_calibration_set(latest_cal_set_id), latest_cal_set_id
             else:
                 latest_calibration_set = self._get_latest_calibration_set(chip_label)
+                latest_cal_set_id = latest_calibration_set.observation_set_id
+            calset = self.get_calibration_set(latest_cal_set_id)
         except Exception as e:
             raise CalibrationDataFetchException(
                 f"Could not fetch latest calibration set id from the database: {e}"
             ) from e
-        return latest_calibration_set, latest_calibration_set.observation_set_id
+        return calset, latest_cal_set_id
 
     def _get_latest_calibration_set(self, dut_label: str) -> ObservationSetData:
         observation_sets = self._station_control.query_observation_sets(
@@ -74,8 +74,8 @@ class CalibrationDataProvider:
         )
         return observation_sets[0]
 
-    def get_calibration_set_values(self, calibration_set_id: uuid.UUID) -> dict[str, ObservationValue]:
-        """Get saved calibration set observations by UUID
+    def get_calibration_set_values(self, calibration_set_id: uuid.UUID) -> CalibrationSet:
+        """Get saved calibration set observations by UUID.
 
         Args:
             calibration_set_id: UUID of the calibration set to retrieve.
