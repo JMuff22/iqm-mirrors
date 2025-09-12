@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.8.0 (2025-07-09)
+==========================
+
+Features
+--------
+
+- Enable mypy type checking in CI and add temporary type ignores to the source code. :issue:`SW-1615`
+
 Version 1.7.0 (2025-07-09)
 ==========================
 
