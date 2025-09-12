@@ -99,7 +99,6 @@ class QUBOInstance(ProblemInstance):
         """The dimension of the problem (i.e., the number of binary variables)."""
         return self._bqm.num_variables
 
-    # pylint: disable=anomalous-backslash-in-string
     @property
     def qubo_matrix(self) -> np.ndarray:
         r"""The QUBO matrix of the problem instance.
@@ -179,7 +178,6 @@ class QUBOInstance(ProblemInstance):
         return float(energy)
 
 
-# pylint: disable=too-many-instance-attributes
 class ConstrainedQuadraticInstance(ProblemInstance):
     """A class for constrainted quadratic binary problems.
 

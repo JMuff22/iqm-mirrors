@@ -77,7 +77,6 @@ class QUBOQAOA(QAOA):
         """The graph whose edges / nodes have weights ``bias`` equal to the coefficients in the problem Hamiltonian."""
         return to_networkx_graph(self._bqm)
 
-    # pylint: disable=anomalous-backslash-in-string
     @property
     def interactions(self) -> np.ndarray:
         r"""Returns an upper-triangular matrix of the *ZZ* interactions between the variables.
@@ -95,7 +94,6 @@ class QUBOQAOA(QAOA):
         matrix_interactions[row, col] = quad
         return matrix_interactions
 
-    # pylint: disable=anomalous-backslash-in-string
     @property
     def local_fields(self) -> np.ndarray:
         r"""Returns a :class:`~numpy.ndarray` of the local fields of the model (*Z* coefficients).

@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 1.20.0 (2025-09-01)
+===========================
+
+Features
+--------
+
+* Add ``mis_generator`` function modeled on ``maxcut_generator`` to generate random instances of the ``MISInstance`` problem instance.
+* Add basic unit tests for both ``mis_generator`` and for ``maxcut_generator``.
+
 Version 1.19.0 (2025-08-20)
 ===========================
 

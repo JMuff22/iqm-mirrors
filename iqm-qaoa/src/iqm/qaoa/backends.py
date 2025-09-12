@@ -21,9 +21,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 """The module for various backends for calculating the expectation value / samples from QAOA."""
 
-# The following pylint warning is disabled for this module because most backends only have one method.
-# pylint: disable=too-few-public-methods
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -88,10 +85,6 @@ class SamplerBackend(ABC):
         """
 
 
-# The Pylint warning "too-many-locals" is disabled on the following function because the function follows
-# the formulas from the paper closely (including variable names) and refactoring it would just make
-# it more confusing.
-# pylint: disable=too-many-locals
 class EstimatorSingleLayer(EstimatorBackend):
     """The estimator class for calculating the expectation value analytically (for :math:`p=1` QAOA)."""
 

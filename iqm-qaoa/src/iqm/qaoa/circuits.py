@@ -161,7 +161,6 @@ def quimb_tn(qaoa: QUBOQAOA) -> qtn.Circuit:
     return tn
 
 
-# pylint: disable=too-many-locals
 def transpiled_circuit(
     qaoa: QUBOQAOA,
     backend: BackendV2 = AerSimulator(method="statevector"),
