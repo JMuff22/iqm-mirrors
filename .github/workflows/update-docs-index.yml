@@ -1,0 +1,63 @@
+name: Update Documentation Index
+
+on:
+  # Run after docs are deployed to gh-pages
+  workflow_run:
+    workflows: ["Build and Deploy Versioned Docs", "Build and Deploy Latest Docs"]
+    types:
+      - completed
+    branches: [gh-pages]
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install packaging
+
+      - name: Checkout main branch to get generate_index.py
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+          sparse-checkout: |
+            generate_index.py
+
+      - name: Generate updated index page
+        run: |
+          # Copy the script to current directory and run it on gh-pages content
+          cp main-branch/generate_index.py .
+          python generate_index.py .
+          rm -rf main-branch
+
+      - name: Commit and push updated index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if [ -n "$(git status --porcelain)" ]; then
+            git add index.html
+            git commit -m "docs: Update documentation index"
+            git push
+            echo "Index page updated successfully"
+          else
+            echo "No changes to index page"
+          fi
