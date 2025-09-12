@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 30.1.0 (2025-08-28)
+===========================
+
+Bug fixes
+---------
+
+- fix initialization of backends on resonance
+
 Version 30.0.0 (2025-08-20)
 ===========================
 
@@ -52,7 +60,7 @@ Version 29.11.0 (2025-08-07)
 Features
 --------
 
-- Added :meth:`IQMClient.get_structured_metrics` for obtaining quality metric information.
+- Added :meth:`IQMClient._get_calibration_quality_metrics` for obtaining quality metric and calibration information.
 
 Version 29.10.0 (2025-07-31)
 ============================

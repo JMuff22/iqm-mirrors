@@ -174,6 +174,15 @@ circuit(s) are sampled:
    `Inspecting circuits before submitting them for execution`_ for inspecting the actual run request sent for
    execution.
 
+.. note::
+
+    As of ``iqm-client >= 30.1.0``, structured quality metrics and calibration data are available to
+    ``IQMTarget`` for improved transpilation. To import the latest valid quality metric data corresponding
+    to the default calibration set into ``IQMTarget``, set ``use_metrics`` to ``True`` when initializing the 
+    class. For Resonance users, this data is not yet available via the Resonance API, so use the default setting
+    of ``use_metrics`` of ``False``.
+    
+
 You can optionally provide IQMBackend specific options as additional keyword arguments to
 :meth:`.IQMBackend.run`, documented at :meth:`.IQMBackend.create_run_request`.
 For example, you can enable heralding measurements using ``circuit_compilation_options`` as follows:

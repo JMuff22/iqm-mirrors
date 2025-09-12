@@ -55,8 +55,9 @@ class IQMBackend(IQMBackendBase):
         calibration_set_id: ID of the calibration set the backend will use.
             ``None`` means the IQM server will be queried for the current default
             calibration set.
-        use_metrics: Iff True, the backend will query the server for calibration data and related
-            quality metrics, and pass these to the transpilation target(s).
+        use_metrics: If True, the backend will query the server for calibration data and related
+            quality metrics, and pass these to the transpilation target(s). The default value is set
+            to False until quality metrics become available on the Resonance API.
         kwargs: Optional arguments to be passed to the parent Backend initializer.
 
     """
@@ -66,7 +67,7 @@ class IQMBackend(IQMBackendBase):
         client: IQMClient,
         *,
         calibration_set_id: str | UUID | None = None,
-        use_metrics: bool = True,
+        use_metrics: bool = False,
         **kwargs,
     ):
         if calibration_set_id is not None and not isinstance(calibration_set_id, UUID):
@@ -373,7 +374,7 @@ class IQMProvider:
         name: str | None = None,
         calibration_set_id: UUID | None = None,
         *,
-        use_metrics: bool = True,
+        use_metrics: bool = False,
     ) -> IQMBackend:
         """IQMBackend instance associated with this provider.
 
@@ -382,8 +383,9 @@ class IQMProvider:
             calibration_set_id: ID of the calibration set to be used with the backend.
                 Affects both the transpilation target and the circuit execution.
                 If None, the server default calibration set will be used.
-            use_metrics: Iff True, the backend will provide calibration data and related quality metrics
-                to the transpilation target to improve the transpilation.
+            use_metrics: If True, the backend will provide calibration data and related quality metrics
+                to the transpilation target to improve the transpilation. The default value is set to False
+                until quality metrics become available on the Resonance API.
 
         Returns:
             Backend instance for connecting to a quantum computer.
