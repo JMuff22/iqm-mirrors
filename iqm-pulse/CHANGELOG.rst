@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 11.1.0 (2025-09-08)
+===========================
+
+Features
+--------
+
+- ScheduleBuilder.timeboxes_to_front_padded_playlist now returns also the used measure implementations per readout label
+
 Version 11.0.0 (2025-09-08)
 ===========================
 

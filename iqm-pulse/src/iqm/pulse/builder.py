@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from collections.abc import Iterable
 import copy
 from dataclasses import dataclass, field, replace
@@ -983,7 +984,9 @@ class ScheduleBuilder:
             boxes.append(factory(**op.args))
         return TimeBox.composite(boxes, label=name, scheduling_algorithm=scheduling_algorithm)
 
-    def timeboxes_to_front_padded_playlist(self, boxes: Iterable[TimeBox], *, neighborhood: int = 0) -> Playlist:
+    def timeboxes_to_front_padded_playlist(
+        self, boxes: Iterable[TimeBox], *, neighborhood: int = 0
+    ) -> tuple[Playlist, dict[str, set[str]]]:
         """Temporary helper function, for converting a sequence of TimeBoxes to a Playlist.
 
         Each individual TimeBox in ``boxes`` is resolved into a Schedule, and then
@@ -1002,7 +1005,8 @@ class ScheduleBuilder:
                 blocks only the defined locus components and any other components which have occupied channels.
 
         Returns:
-            playlist that implements ``boxes``
+            playlist that implements ``boxes`` and the mapping from readout labels to the set of used measurement
+            implementations (of the format ``<QuantumOp name>.<impl name>``).
 
         """
         schedules = [self.resolve_timebox(box, neighborhood=neighborhood).cleanup() for box in boxes]
@@ -1046,7 +1050,7 @@ class ScheduleBuilder:
             playlist that implements ``boxes``
 
         """
-        return self.build_playlist(self.timebox_to_schedule(box, neighborhood=neighborhood) for box in boxes)
+        return self.build_playlist(self.timebox_to_schedule(box, neighborhood=neighborhood) for box in boxes)[0]
 
     def timebox_to_schedule(
         self,
@@ -1396,7 +1400,9 @@ class ScheduleBuilder:
             if not schedule[ch]:
                 schedule.append(ch, Block(T))
 
-    def build_playlist(self, schedules: Iterable[Schedule], finish_schedules: bool = True) -> Playlist:
+    def build_playlist(  # noqa: PLR0915
+        self, schedules: Iterable[Schedule], finish_schedules: bool = True
+    ) -> tuple[Playlist, dict[str, set[str]]]:
         """Build a playlist from a number of instruction schedules.
 
         This involves compressing the schedules so that no duplicate information
@@ -1410,7 +1416,8 @@ class ScheduleBuilder:
                 unless some process has already finalised them before calling this function.
 
         Returns:
-            playlist containing the schedules
+            playlist containing the schedules and the mapping from readout labels to the set of used measurement
+            implementations (of the format ``<QuantumOp name>.<impl name>``).
 
         Raises:
             ValueError: if the schedules contain channels with non-uniform sampling rates
@@ -1458,6 +1465,75 @@ class ScheduleBuilder:
 
                 # add the schedules in the playlist
 
+        label_to_implementation: dict[str, set[str]] = defaultdict(set)
+
+        def _map_instruction(inst: Instruction) -> sc_instructions.Instruction:
+            """TODO only necessary until SC has been updated to use the iqm.pulse Instruction class."""
+            operation: Any
+
+            def _map_acquisition(acq: AcquisitionMethod) -> sc_instructions.AcquisitionMethod:
+                if acq.implementation is not None:
+                    label_to_implementation[acq.label].add(acq.implementation)
+                if isinstance(acq, ThresholdStateDiscrimination):
+                    return sc_instructions.ThresholdStateDiscrimination(
+                        label=acq.label,
+                        delay_samples=acq.delay_samples,
+                        weights=_map_instruction(acq.weights).operation,
+                        threshold=acq.threshold,
+                        feedback_signal_label=acq.feedback_signal_label,
+                    )
+                if isinstance(acq, ComplexIntegration):
+                    return sc_instructions.ComplexIntegration(
+                        label=acq.label,
+                        delay_samples=acq.delay_samples,
+                        weights=_map_instruction(acq.weights).operation,
+                    )
+                if isinstance(acq, TimeTrace):
+                    return sc_instructions.TimeTrace(
+                        label=acq.label, delay_samples=acq.delay_samples, duration_samples=acq.duration_samples
+                    )
+                raise ValueError(f"Unknown AcquisitionMethod {acq}")
+
+            if isinstance(inst, Wait):
+                operation = sc_instructions.Wait()
+            elif isinstance(inst, VirtualRZ):
+                operation = sc_instructions.VirtualRZ(inst.phase_increment)
+            elif isinstance(inst, RealPulse):
+                operation = sc_instructions.RealPulse(
+                    wave=to_canonical(inst.wave),
+                    scale=inst.scale,
+                )
+            elif isinstance(inst, IQPulse):
+                operation = sc_instructions.IQPulse(
+                    wave_i=to_canonical(inst.wave_i),
+                    wave_q=to_canonical(inst.wave_q),
+                    scale_i=inst.scale_i,
+                    scale_q=inst.scale_q,
+                    phase=inst.phase,
+                    modulation_frequency=inst.modulation_frequency,
+                    phase_increment=inst.phase_increment,
+                )
+            elif isinstance(inst, ConditionalInstruction):
+                if len(inst.outcomes) != 2:
+                    raise ValueError("ConditionalInstruction requires exactly two outcomes.")
+                operation = sc_instructions.ConditionalInstruction(
+                    condition=inst.condition,
+                    if_true=_map_instruction(inst.outcomes[1]),
+                    if_false=_map_instruction(inst.outcomes[0]),
+                )
+            elif isinstance(inst, MultiplexedIQPulse):
+                sc_entries = tuple((_map_instruction(p), d) for p, d in inst.entries)
+                operation = sc_instructions.MultiplexedIQPulse(sc_entries)
+            elif isinstance(inst, ReadoutTrigger):
+                sc_acquisitions = tuple(_map_acquisition(a) for a in inst.acquisitions)
+                operation = sc_instructions.ReadoutTrigger(
+                    probe_pulse=_map_instruction(inst.probe_pulse),
+                    acquisitions=sc_acquisitions,
+                )
+            else:
+                raise ValueError(f"{inst} not supported.")
+            return sc_instructions.Instruction(duration_samples=int(inst.duration), operation=operation)
+
         # NOTE that there is no implicit right-alignment or equal duration for schedules, unlike in old-style playlists!
         for schedule in schedules:
             finished_schedule = self._finish_schedule(schedule) if finish_schedules else schedule
@@ -1486,7 +1562,7 @@ class ScheduleBuilder:
                 if prev_wait:
                     _append_to_schedule(sc_schedule, channel_name, prev_wait)
             pl.segments.append(sc_schedule)
-        return pl
+        return pl, label_to_implementation
 
     def _set_gate_implementation_shortcut(self, op_name: str) -> None:
         """Create shortcut for `self.get_implementation(<op_name>, ...)` as `self.<op_name>(...)`.
@@ -1522,67 +1598,3 @@ class ScheduleBuilder:
                 f"a class attribute ``ScheduleBuilder.{op_name}``."
             )
             self._logger.warning(warning_msg)
-
-
-def _map_instruction(inst: Instruction) -> sc_instructions.Instruction:
-    """TODO only necessary until SC has been updated to use the iqm.pulse Instruction class."""
-    operation: Any
-
-    def _map_acquisition(acq: AcquisitionMethod) -> sc_instructions.AcquisitionMethod:
-        if isinstance(acq, ThresholdStateDiscrimination):
-            return sc_instructions.ThresholdStateDiscrimination(
-                label=acq.label,
-                delay_samples=acq.delay_samples,
-                weights=_map_instruction(acq.weights).operation,
-                threshold=acq.threshold,
-                feedback_signal_label=acq.feedback_signal_label,
-            )
-        if isinstance(acq, ComplexIntegration):
-            return sc_instructions.ComplexIntegration(
-                label=acq.label, delay_samples=acq.delay_samples, weights=_map_instruction(acq.weights).operation
-            )
-        if isinstance(acq, TimeTrace):
-            return sc_instructions.TimeTrace(
-                label=acq.label, delay_samples=acq.delay_samples, duration_samples=acq.duration_samples
-            )
-        raise ValueError(f"Unknown AcquisitionMethod {acq}")
-
-    if isinstance(inst, Wait):
-        operation = sc_instructions.Wait()
-    elif isinstance(inst, VirtualRZ):
-        operation = sc_instructions.VirtualRZ(inst.phase_increment)
-    elif isinstance(inst, RealPulse):
-        operation = sc_instructions.RealPulse(
-            wave=to_canonical(inst.wave),
-            scale=inst.scale,
-        )
-    elif isinstance(inst, IQPulse):
-        operation = sc_instructions.IQPulse(
-            wave_i=to_canonical(inst.wave_i),
-            wave_q=to_canonical(inst.wave_q),
-            scale_i=inst.scale_i,
-            scale_q=inst.scale_q,
-            phase=inst.phase,
-            modulation_frequency=inst.modulation_frequency,
-            phase_increment=inst.phase_increment,
-        )
-    elif isinstance(inst, ConditionalInstruction):
-        if len(inst.outcomes) != 2:
-            raise ValueError("ConditionalInstruction requires exactly two outcomes.")
-        operation = sc_instructions.ConditionalInstruction(
-            condition=inst.condition,
-            if_true=_map_instruction(inst.outcomes[1]),
-            if_false=_map_instruction(inst.outcomes[0]),
-        )
-    elif isinstance(inst, MultiplexedIQPulse):
-        sc_entries = tuple((_map_instruction(p), d) for p, d in inst.entries)
-        operation = sc_instructions.MultiplexedIQPulse(sc_entries)
-    elif isinstance(inst, ReadoutTrigger):
-        sc_acquisitions = tuple(_map_acquisition(a) for a in inst.acquisitions)
-        operation = sc_instructions.ReadoutTrigger(
-            probe_pulse=_map_instruction(inst.probe_pulse),
-            acquisitions=sc_acquisitions,
-        )
-    else:
-        raise ValueError(f"{inst} not supported.")
-    return sc_instructions.Instruction(duration_samples=int(inst.duration), operation=operation)

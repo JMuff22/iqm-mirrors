@@ -199,9 +199,13 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
 
         acquisition_type = root_params.get("acquisition_type", self.root_parameters["acquisition_type"].value)  # type: ignore[union-attr]
         acquisition_label = "TO_BE_REPLACED"
+        op_and_implementation = f"{self.parent.name}.{self.name}"
         if acquisition_type == "complex":
             acquisition_method = ComplexIntegration(
-                label=acquisition_label, delay_samples=root_params["acquisition_delay"], weights=weights
+                label=acquisition_label,
+                delay_samples=root_params["acquisition_delay"],
+                weights=weights,
+                implementation=op_and_implementation,
             )
         elif acquisition_type == "threshold":
             acquisition_method = ThresholdStateDiscrimination(
@@ -209,6 +213,7 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
                 delay_samples=root_params["acquisition_delay"],
                 weights=weights,
                 threshold=root_params["integration_threshold"],
+                implementation=op_and_implementation,
             )
         else:
             raise ValueError(f"Unknown acquisition type {acquisition_type}")
@@ -407,6 +412,7 @@ class Measure_CustomWaveforms(CustomIQWaveforms):
                     label=f"{probe_name}__{label_key}",
                     delay_samples=delay_samples,
                     duration_samples=duration_samples,
+                    implementation=f"{self.parent.name}.{self.name}",
                 )
                 trigger_with_trace = replace(readout_trigger, acquisitions=readout_trigger.acquisitions + (time_trace,))
                 segment._instructions[0] = trigger_with_trace
@@ -520,7 +526,10 @@ class ProbePulse_CustomWaveforms(CustomIQWaveforms):
         acquisition_delay = round(self._probe_line.duration_to_samples(root_params["acquisition_delay"]))
         time_trace_label = "TO_BE_REPLACED"
         time_trace_acquisition = TimeTrace(
-            label=time_trace_label, delay_samples=acquisition_delay, duration_samples=integration_length
+            label=time_trace_label,
+            delay_samples=acquisition_delay,
+            duration_samples=integration_length,
+            implementation=f"{self.parent.name}.{self.name}",
         )
 
         # TODO: due to device limitations, we need to integrate always, even though it does not make much sense here
@@ -536,7 +545,10 @@ class ProbePulse_CustomWaveforms(CustomIQWaveforms):
         )
         integration_label = "dummy__integration"
         integration_acquisition = ComplexIntegration(
-            label=integration_label, delay_samples=acquisition_delay, weights=weights
+            label=integration_label,
+            delay_samples=acquisition_delay,
+            weights=weights,
+            implementation=f"{self.parent.name}.{self.name}",
         )
         return probe_pulse, (integration_acquisition, time_trace_acquisition)
 

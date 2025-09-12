@@ -210,6 +210,10 @@ class AcquisitionMethod:
     """Identifier for the returned data, like ``QB1__readout.time_trace``."""
     delay_samples: int
     """Delay from beginning of probe pulse to beginning of acquisition window, in samples."""
+    implementation: str | None
+    """Measure operation and implementation that created this AcquisitionMethod, in the format
+    ``<operation name>.<implementation name>``. If the acquisition is not originated from a
+    gate implementation, this should be ``None``."""
 
 
 @dataclass(frozen=True)
