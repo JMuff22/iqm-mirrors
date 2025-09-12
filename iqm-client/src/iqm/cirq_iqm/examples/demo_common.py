@@ -178,7 +178,8 @@ def demo(device: IQMDevice, circuit: cirq.Circuit, *, use_qsim: bool = False) ->
 
     # Initialize a ket-based simulator for evaluating the circuit
     if use_qsim:
-        import qsimcirq
+        # FIXME: decide what to do with this implicit dependency to qsimcirq.
+        import qsimcirq  # type:ignore[import-not-found]
 
         sim = qsimcirq.QSimSimulator()
         print("Using qsim.")
