@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.4.0 (2025-06-23)
+==========================
+
+Features
+--------
+
+- Add a citation of Elisabeth's QAOA paper to the documentation (docstring under `TreeQAOA` class).
+
 Version 1.3.0 (2025-06-20)
 ==========================
 
