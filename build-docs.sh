@@ -52,9 +52,8 @@ if [ "$VERSION" != "latest" ]; then
   # Extract base package name and extras separately
   if [[ "$FULL_PACKAGE_SPEC" == *"["* ]]; then
     # Package has extras like iqm-client[qiskit,cirq,cli]
-    BASE_NAME="${FULL_PACKAGE_SPEC%%\[*}"
-    EXTRAS="${FULL_PACKAGE_SPEC#*\[}"
-    VERSIONED_SPEC="${BASE_NAME}==${CLEAN_VERSION}[${EXTRAS}"
+    # Correct syntax: package[extras]==version
+    VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${CLEAN_VERSION}"
   else
     # Simple package name without extras
     VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${CLEAN_VERSION}"
