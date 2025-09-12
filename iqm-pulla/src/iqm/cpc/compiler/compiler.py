@@ -49,7 +49,7 @@ from iqm.pulla.utils import (
 )
 from iqm.pulse.builder import ScheduleBuilder
 from iqm.pulse.gate_implementation import GateImplementation, Locus
-from iqm.pulse.gates import register_implementation
+from iqm.pulse.gates import register_implementation, register_operation
 
 # from iqm.pulse.gates.move import apply_move_gate_phase_corrections, validate_move_instructions
 from iqm.pulse.quantum_ops import QuantumOp
@@ -323,38 +323,36 @@ class Compiler:
         self,
         op_name: str,
         impl_name: str,
-        implementation: type[GateImplementation],
+        impl_class: type[GateImplementation],
         *,
         set_as_default: bool = False,
         overwrite: bool = False,
-        quantum_op_specs: QuantumOp | dict | None = None,
+        quantum_op: QuantumOp | None = None,
     ) -> None:
-        """Adds a new implementation of a quantum operation (gate).
+        """Adds a new implementation for a quantum operation (gate).
 
         Refreshes the compiler after adding a new implementation.
 
         Args:
-            op_name: The gate name for which to register a new implementation.
-            impl_name: The "human-readable" name with which the new gate implementation will be found e.g. in settings.
-            implementation: The python class of the new gate implementation to be added.
-            set_as_default: Whether to set the new implementation as the default implementation for the gate.
-            overwrite: If True, allows replacing any existing implementation of the same name.
-            quantum_op_specs: The quantum operation this gate represents. If a QuantumOp is given, it is used as is.
+            op_name: The name of the quantum operation for which to register a new implementation.
+            impl_name: The "human-readable" name with which the new implementation will be found e.g. in settings.
+            impl_class: The class of the new implementation to be added.
+            set_as_default: Whether to set the new implementation as the default implementation for the operation.
+            overwrite: If True, replaces any existing implementation of the same name for the operation.
+            quantum_op: The quantum operation this gate represents. If a QuantumOp is given, it is used as is.
                 If None is given and the same gate has been registered before, the previously registered properties are
-                used.
-                Otherwise, the given dict values are given to the constructor of
-                :class:`~iqm.pulse.quantum_ops.QuantumOp`.
-                For any missing constructor values, some defaults suitable for a 1-QB gate are used.
+                used. Existing operations cannot be replaced or modified.
 
         """
+        if quantum_op is not None:
+            register_operation(self.builder.op_table, quantum_op)
         register_implementation(
             operations=self.builder.op_table,
-            gate_name=op_name,
+            op_name=op_name,
             impl_name=impl_name,
-            impl_class=implementation,
+            impl_class=impl_class,
             set_as_default=set_as_default,
             overwrite=overwrite,
-            quantum_op_specs=quantum_op_specs,
         )
         self._refresh()
 

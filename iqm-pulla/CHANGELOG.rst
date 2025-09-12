@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.0.0 (2025-07-16)
+==========================
+
+Breaking changes
+----------------
+
+- :meth:`Compiler.add_implementation` signature has slightly changed.
+
 Version 8.3.0 (2025-07-09)
 ==========================
 

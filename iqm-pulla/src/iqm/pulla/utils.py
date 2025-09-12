@@ -86,7 +86,7 @@ def iqm_circuit_to_gate_implementation(circuit: CPC_Circuit, qubit_mapping: dict
         # TODO This method does not heed GateImplementation.locus, and will always apply the
         # gate on fixed qubits. It just pastes ``circuit`` contents, with the qubits mapped using
         # the likewise fixed mapping, into a TimeBox.
-        registered_gates = list({instr.name for instr in circuit.instructions})
+        registered_gates = tuple({instr.name for instr in circuit.instructions})
 
         def __call__(self):
             boxes = []
