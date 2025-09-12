@@ -19,6 +19,7 @@ from collections import Counter
 from collections.abc import Collection, Sequence
 from typing import TYPE_CHECKING
 
+from iqm.iqm_client import Circuit
 from iqm.qiskit_iqm.iqm_backend import IQMBackendBase
 from iqm.qiskit_iqm.iqm_job import IQMJob
 from iqm.qiskit_iqm.qiskit_to_iqm import serialize_instructions
@@ -32,7 +33,7 @@ from iqm.pulla.interface import StationControlResult, TaskStatus
 from iqm.pulse.builder import CircuitOperation
 
 if TYPE_CHECKING:
-    from iqm.iqm_client import Circuit, Instruction
+    from iqm.iqm_client import Instruction
     from iqm.qiskit_iqm.iqm_backend import DynamicQuantumArchitecture
     from iqm.qiskit_iqm.iqm_provider import IQMBackend
 
@@ -137,7 +138,10 @@ def qiskit_to_pulla(
         else {m.logical_name: m.physical_name for m in run_request.qubit_mapping}
     )
 
-    circuits = [_circuit_to_dataclass(c) for c in run_request.circuits]
+    # We can be certain run_request contains only Circuit objects, because we created it
+    # right in this method with qiskit.QuantumCircuit objects
+    run_request_iqm_circuits: list[Circuit] = [c for c in run_request.circuits if isinstance(c, (Circuit))]
+    circuits = [_circuit_to_dataclass(c) for c in run_request_iqm_circuits]
     return circuits, compiler
 
 

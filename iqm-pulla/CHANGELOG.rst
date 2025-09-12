@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.2.0 (2025-07-31)
+==========================
+
+Features
+--------
+
+- Support iqm-client with QIR support
+
 Version 9.1.0 (2025-07-30)
 ==========================
 
