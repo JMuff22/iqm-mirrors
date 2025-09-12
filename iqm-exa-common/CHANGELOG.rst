@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 26.5 (2025-03-19)
+=========================
+
+Bug fixes
+---------
+
+- Fix Parameters with element_indices having those indices duplicated in the name when deserialised
+
 Version 26.4 (2025-03-11)
 =========================
 

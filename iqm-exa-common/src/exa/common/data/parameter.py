@@ -236,11 +236,12 @@ class Parameter(BaseModel):
                 case _:
                     raise ValidationError("Parameter 'element_indices' must be one or more ints.")
             object.__setattr__(self, "element_indices", idxs)
-
-            object.__setattr__(self, "_parent_name", self.name)
-            object.__setattr__(self, "_parent_label", self.label)
-            object.__setattr__(self, "label", f"{self.label} {idxs}")
-            name = self.name
+            # there may be len(idxs) num of "__" separated indices at the end, remove those to get the parent name
+            parent_name = self.name.replace("__" + "__".join([str(idx) for idx in idxs]), "")
+            object.__setattr__(self, "_parent_name", parent_name)
+            object.__setattr__(self, "_parent_label", self.label.replace(f" {idxs}", ""))
+            object.__setattr__(self, "label", f"{self._parent_label} {idxs}")
+            name = self._parent_name
             for index in idxs:
                 name += f"__{index}"
             object.__setattr__(self, "name", name)
