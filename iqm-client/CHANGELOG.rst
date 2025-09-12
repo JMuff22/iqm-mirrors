@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 29.11.0 (2025-08-07)
+============================
+
+Features
+--------
+
+- Added :meth:`IQMClient.get_structured_metrics` for obtaining quality metric information.
+
 Version 29.10.0 (2025-07-31)
 ============================
 
