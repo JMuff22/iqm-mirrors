@@ -2,6 +2,15 @@
 Changelog
 =========
 
+Version 1.10.0 (2025-07-21)
+===========================
+
+Bug fixes
+---------
+
+- Add a fallback routine to `_get_embedding` which allows it to embed larger problems on QPUs on which it would previously fail, by using a greedy algorithm for finding a Hamiltonian path in a graph.
+- Add a small test to check that it works.
+
 Version 1.9.0 (2025-07-21)
 ==========================
 
