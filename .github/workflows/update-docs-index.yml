@@ -6,7 +6,6 @@ on:
     workflows: ["Build and Deploy Versioned Docs", "Build and Deploy Latest Docs"]
     types:
       - completed
-    branches: [gh-pages]
   
   # Allow manual trigger
   workflow_dispatch:
