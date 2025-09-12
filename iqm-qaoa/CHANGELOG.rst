@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.26.0 (2025-09-05)
+===========================
+
+Bug fixes
+---------
+
+- Add an option to specify ``vartype`` when instantiating a ``QUBOInstance`` from a ``numpy`` array or a ``networkx`` graph.
+
 Version 1.25.0 (2025-09-05)
 ===========================
 

@@ -50,6 +50,7 @@ from dimod import BinaryQuadraticModel, ConstrainedQuadraticModel, to_networkx_g
 from dimod.sym import Sense
 from dimod.typing import Variable
 from dimod.utilities import new_variable_label
+from dimod.vartypes import VartypeLike
 from iqm.applications.applications import ProblemInstance
 from iqm.applications.graph_utils import EDGE_ATTR_PRIORITY, NODE_ATTR_PRIORITY, _get_attr_with_priority
 import networkx as nx
@@ -73,14 +74,18 @@ class QUBOInstance(ProblemInstance):
     Args:
         qubo_object: Either a square :class:`~numpy.ndarray`, a :class:`~networkx.Graph` or
             a :class:`~dimod.BinaryQuadraticModel` describing the QUBO problem.
+        vartype: An optional variable type for interpreting the input :class:`~numpy.ndarray` or
+            :class:`~networkx.Graph` as :class:`~dimod.BinaryQuadraticModel`. The default value is 'BINARY'.
 
     """
 
-    def __init__(self, qubo_object: np.ndarray | nx.Graph | BinaryQuadraticModel) -> None:
+    def __init__(
+        self, qubo_object: np.ndarray | nx.Graph | BinaryQuadraticModel, vartype: VartypeLike = "BINARY"
+    ) -> None:
         if isinstance(qubo_object, np.ndarray) and qubo_object.ndim == 2:  # noqa: PLR2004
-            self._bqm = BinaryQuadraticModel(qubo_object, vartype="BINARY")
+            self._bqm = BinaryQuadraticModel(qubo_object, vartype=vartype)
         elif isinstance(qubo_object, nx.Graph):
-            self._bqm = BinaryQuadraticModel(qubo_object.number_of_nodes(), vartype="BINARY")
+            self._bqm = BinaryQuadraticModel(qubo_object.number_of_nodes(), vartype=vartype)
             for node in qubo_object.nodes:
                 value = _get_attr_with_priority(qubo_object.nodes[node], NODE_ATTR_PRIORITY)
 
@@ -117,6 +122,7 @@ class QUBOInstance(ProblemInstance):
             raise ValueError(
                 "The input is not a valid QUBO object. Valid objects are: 2D numpy array, networkx graph or dimod BQM."
             )
+        self._bqm = self._bqm.binary  # For consistency, we save the BQM in its binary form.
         super().__init__()
         self._original_variables = self._bqm.variables.copy()
 
