@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.18.0 (2025-08-20)
+===========================
+
+Bug fixes
+---------
+
+- Add explicit cross-component requirements
+
 Version 1.17.0 (2025-08-20)
 ===========================
 
