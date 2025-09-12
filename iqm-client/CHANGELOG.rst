@@ -2,6 +2,20 @@
 Changelog
 =========
 
+Version 31.0.0 (2025-09-11)
+===========================
+
+Breaking changes
+----------------
+
+- Use :class:`iqm.pulse.Circuit` and :class:`iqm.pulse.CircuitOperation` as the new
+  circuit and instruction formats. The old :class:`Circuit`, :class:`Instruction` and :class:`NativeOperation` models defined in
+  :mod:`iqm.iqm_client.models` are removed. :issue:`SW-1663`
+- The quantum operation parameters ``angle_t`` and ``phase_t`` (in units of full turns) are no longer supported.
+  Use ``angle`` and ``phase`` (in units of radians) instead. :issue:`SW-1663`
+- :func:`iqm.cirq_iqm.serialize.instruction_to_operation` renamed to :func:`iqm.cirq_iqm.serialize.circuit_operation_to_operation`.
+- :func:`iqm.cirq_iqm.serialize.map_operation` renamed to :func:`iqm.cirq_iqm.serialize.operation_to_circuit_operation`.
+
 Version 30.2.0 (2025-09-03)
 ===========================
 

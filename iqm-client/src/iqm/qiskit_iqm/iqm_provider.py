@@ -22,7 +22,6 @@ from uuid import UUID
 import warnings
 
 from iqm.iqm_client import (
-    Circuit,
     CircuitBatch,
     CircuitCompilationOptions,
     CircuitValidationError,
@@ -38,6 +37,8 @@ from iqm.qiskit_iqm.iqm_job import IQMJob
 from iqm.qiskit_iqm.qiskit_to_iqm import serialize_instructions
 from qiskit import QuantumCircuit
 from qiskit.providers import JobStatus, JobV1, Options
+
+from iqm.pulse import Circuit
 
 try:
     __version__ = version("qiskit-iqm")

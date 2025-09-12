@@ -24,7 +24,6 @@ import warnings
 from iqm.iqm_client import (
     DEFAULT_TIMEOUT_SECONDS,
     APITimeoutError,
-    Circuit,
     CircuitMeasurementResults,
     HeraldingMode,
     IQMClient,
@@ -37,6 +36,8 @@ from iqm.qiskit_iqm.qiskit_to_iqm import MeasurementKey
 import numpy as np
 from qiskit.providers import JobStatus, JobV1
 from qiskit.result import Counts, Result
+
+from iqm.pulse import Circuit
 
 if TYPE_CHECKING:
     from iqm.qiskit_iqm.iqm_provider import IQMBackend

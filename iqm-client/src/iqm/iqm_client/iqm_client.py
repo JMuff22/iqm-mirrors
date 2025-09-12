@@ -243,7 +243,7 @@ class IQMClient:
                 # validate the circuit against the static information in iqm.iqm_client.models._SUPPORTED_OPERATIONS
                 validate_circuit(circuit)
             except ValueError as e:
-                raise CircuitValidationError(f"The circuit at index {i} failed the validation").with_traceback(
+                raise CircuitValidationError(f"The circuit at index {i} failed the validation: {e}").with_traceback(
                     e.__traceback__
                 )
 

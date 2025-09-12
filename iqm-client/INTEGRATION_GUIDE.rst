@@ -26,19 +26,23 @@ requires only the URL of the IQM quantum computer.
 
     iqm_client = IQMClient(server_url)
 
-To submit a quantum circuit for execution, it has to be specified using the :class:`.Circuit` class.
-The available native instructions are documented in the :class:`.Instruction` class.
+To submit a quantum circuit for execution, it has to be specified using the
+:class:`iqm.pulse.Circuit` class. The available native instructions are documented in
+:mod:`iqm.iqm_client.models` and in :class:`iqm.pulse.CircuitOperation`.
 
 .. code-block:: python
 
-    from iqm.iqm_client import Circuit, Instruction
+    from math import pi
+
+    from iqm.pulse.builder import CircuitOperation
+    from iqm.pulse.circuit_operations import Circuit
 
     instructions = (
-        Instruction(
-            name="prx", qubits=("QB1",), args={"phase_t": 0.7, "angle_t": 0.25}
+        CircuitOperation(
+            name="prx", locus=("QB1",), args={"phase": 1.4 * pi, "angle": 0.5 * pi}
         ),
-        Instruction(name="cz", qubits=("QB1", "QB2"), args={}),
-        Instruction(name="measure", qubits=("QB2",), args={"key": "Qubit 2"}),
+        CircuitOperation(name="cz", locus=("QB1", "QB2"), args={}),
+        CircuitOperation(name="measure", locus=("QB2",), args={"key": "Qubit 2"}),
     )
 
     circuit = Circuit(name="quantum_circuit", instructions=instructions)
@@ -143,7 +147,8 @@ A typical Star architecture use case would look something like this:
 
 .. code-block:: python
 
-    from iqm.iqm_client import Circuit, IQMClient, simplify_architecture, transpile_insert_moves, transpile_remove_moves
+    from iqm.iqm_client import IQMClient, simplify_architecture, transpile_insert_moves, transpile_remove_moves
+    from iqm.pulse.circuit_operations import Circuit
 
     client = IQMClient(URL_TO_STAR_SERVER)
     dqa = client.get_dynamic_quantum_architecture()
