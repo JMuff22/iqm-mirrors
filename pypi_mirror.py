@@ -98,9 +98,20 @@ def parse_config(file_path):
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue
-                parts = [p.strip() for p in line.split(',')]
-                package_name = parts[0]
-                min_version = parts[1] if len(parts) > 1 else None
+                
+                # Handle packages with extras like: iqm-benchmarks[docs,mgst],2.39
+                # Find the last comma to split package spec from version
+                last_comma_idx = line.rfind(',')
+                if last_comma_idx == -1:
+                    # No version specified
+                    package_name = line
+                    min_version = None
+                else:
+                    package_name = line[:last_comma_idx].strip()
+                    min_version = line[last_comma_idx + 1:].strip()
+                    if not min_version:
+                        min_version = None
+                
                 if package_name:
                     packages.append({'name': package_name, 'min_version': min_version})
     except FileNotFoundError:
