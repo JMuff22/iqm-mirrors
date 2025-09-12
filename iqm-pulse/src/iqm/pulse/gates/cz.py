@@ -383,8 +383,9 @@ class CouplerFluxPulseQubitACStarkPulseGate(GateImplementation):
         """
         _, phase_increment = phase_transformation(0.0, phase_increment)
 
-        wave_i = cls.qubit_drive_wave(phase=phase, **kwargs)  # type: ignore
-        wave_q = cls.qubit_drive_wave(phase=phase - np.pi / 2, **kwargs)  # type: ignore
+        if cls.qubit_drive_wave is not None:
+            wave_i = cls.qubit_drive_wave(phase=phase, **kwargs)
+            wave_q = cls.qubit_drive_wave(phase=phase - np.pi / 2, **kwargs)
         return IQPulse(
             kwargs["n_samples"],
             wave_i=wave_i,

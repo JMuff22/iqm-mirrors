@@ -758,8 +758,8 @@ class ScheduleBuilder:
             if priority_calibration:
                 if op.name in priority_calibration:
                     # first check if full OILCalibrationData structure was given
-                    op_data = priority_calibration.get(op.name)
-                    prio_data = op_data.get(new_impl_name, {}).get(new_locus, {})  # type: ignore
+                    op_data = priority_calibration.get(op.name, {})
+                    prio_data = op_data.get(new_impl_name, {}).get(new_locus, {})
                 else:
                     # if not assume just the data for this locus was given
                     prio_data = priority_calibration
@@ -1116,10 +1116,11 @@ class ScheduleBuilder:
             ):
                 # convert the locus durations to seconds (no probe channels have been used so far)
                 scheduling_in_seconds = True
-                component_durations_seconds = {
-                    component: self._channel_templates["other"].duration_to_seconds(duration)  # type: ignore
-                    for component, duration in component_durations.items()
-                }
+                if self._channel_templates["other"] is not None:
+                    component_durations_seconds = {
+                        component: self._channel_templates["other"].duration_to_seconds(duration)
+                        for component, duration in component_durations.items()
+                    }
 
             child_components = self._get_neighborhood_hard_boundary(child, 0)
             neighborhood_components = self._get_neighborhood_hard_boundary(child, neighborhood)

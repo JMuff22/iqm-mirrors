@@ -431,7 +431,7 @@ class Measure_Constant(Measure_CustomWaveforms, wave_i=Constant, wave_q=Constant
     """
 
 
-class Measure_Constant_Qnd(Measure_CustomWaveforms, wave_i=Constant, wave_q=Constant):
+class Measure_Constant_Qnd(Measure_CustomWaveforms, wave_i=Constant, wave_q=Constant):  # type:ignore[call-arg]
     """Implementation of a single-qubit projective, non quantum demolition, dispersive
     measurements in the Z basis.
 
@@ -824,10 +824,9 @@ class Shelved_Measure_CustomWaveforms(Measure_CustomWaveforms):
     # implementation multiplexing. This is because the method has to return time boxes due to the `prx_12` pulses,
     # instead of `MultiplexedProbeTimeBox`
     # TODO: Enable mixed implementation multiplexing for shelved readout
-    def probe_timebox(
+    def probe_timebox(  # type: ignore[override]
         self, key: str = "", feedback_key: str = "", do_acquisition: bool = True, _skip_override: bool = False
     ) -> TimeBox:
-        # type: ignore[override]
         if _skip_override:
             return super().probe_timebox(key, feedback_key, do_acquisition)
         multiplexed_timeboxes = super().probe_timebox(key, feedback_key)
@@ -847,7 +846,7 @@ class Shelved_Measure_CustomWaveforms(Measure_CustomWaveforms):
         return shelved_measure_box
 
 
-class Shelved_Measure_Constant(Shelved_Measure_CustomWaveforms, wave_i=Constant, wave_q=Constant):
+class Shelved_Measure_Constant(Shelved_Measure_CustomWaveforms, wave_i=Constant, wave_q=Constant):  # type:ignore[call-arg]
     """Implementation of a shelved readout.
 
     A measure gate implemented as a constant waveform is surrounded by two `prx_12` gates.

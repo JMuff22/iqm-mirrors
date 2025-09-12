@@ -218,8 +218,8 @@ class RZ_ACStarkShift(GateImplementation):
         """
         _, phase_increment = phase_transformation(0, phase_increment)
 
-        wave_i = cls.ac_stark_waveform(n_samples=n_samples, phase=phase, **kwargs)  # type: ignore
-        wave_q = cls.ac_stark_waveform(n_samples=n_samples, phase=phase - np.pi / 2, **kwargs)  # type: ignore
+        wave_i = cls.ac_stark_waveform(n_samples=n_samples, phase=phase, **kwargs)
+        wave_q = cls.ac_stark_waveform(n_samples=n_samples, phase=phase - np.pi / 2, **kwargs)
         return IQPulse(
             n_samples,
             wave_i=wave_i,
@@ -236,9 +236,9 @@ class RZ_ACStarkShift_CosineRiseFall(RZ_ACStarkShift, ac_stark_waveform=Modulate
 
 class RZ_ACStarkShift_smoothConstant(
     Constant_PRX_with_smooth_rise_fall,
-    rise_waveform=CosineRise,
-    main_waveform=Constant,
-    fall_waveform=CosineFall,
+    rise_waveform=CosineRise,  # type:ignore[call-arg]
+    main_waveform=Constant,  # type:ignore[call-arg]
+    fall_waveform=CosineFall,  # type:ignore[call-arg]
 ):
     """Constant AC stark pulse with cosine rise and fall padding.
     Implemented as a 3-instruction Schedule.
