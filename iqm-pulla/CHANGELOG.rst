@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.1.0 (2025-07-30)
+==========================
+
+Features
+--------
+
+- Require compiler instead of Pulla in qir_to_pulla
+
 Version 9.0.0 (2025-07-16)
 ==========================
 
