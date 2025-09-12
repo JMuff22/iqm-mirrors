@@ -46,15 +46,18 @@ echo "Installing from spec: '${FULL_PACKAGE_SPEC}' version ${VERSION}"
 
 # For versioned builds, install the specific version
 if [ "$VERSION" != "latest" ]; then
+  # Strip 'v' prefix from version if present (e.g., v2.39 -> 2.39)
+  CLEAN_VERSION="${VERSION#v}"
+  
   # Extract base package name and extras separately
   if [[ "$FULL_PACKAGE_SPEC" == *"["* ]]; then
     # Package has extras like iqm-client[qiskit,cirq,cli]
     BASE_NAME="${FULL_PACKAGE_SPEC%%\[*}"
     EXTRAS="${FULL_PACKAGE_SPEC#*\[}"
-    VERSIONED_SPEC="${BASE_NAME}==${VERSION}[${EXTRAS}"
+    VERSIONED_SPEC="${BASE_NAME}==${CLEAN_VERSION}[${EXTRAS}"
   else
     # Simple package name without extras
-    VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${VERSION}"
+    VERSIONED_SPEC="${FULL_PACKAGE_SPEC}==${CLEAN_VERSION}"
   fi
   echo "Installing versioned package: ${VERSIONED_SPEC}"
   uv pip install "${VERSIONED_SPEC}"
