@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 9.3.0 (2025-06-25)
+==========================
+
+Bug fixes
+---------
+
+- Fix DQA deserialization when ``override_default_implementations`` is not empty. :issue:`SW-1625`
+
 Version 9.2.0 (2025-06-25)
 ==========================
 
