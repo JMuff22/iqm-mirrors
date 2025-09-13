@@ -1,4 +1,4 @@
-iqm-station-control-client>=9,<10
+iqm-station-control-client>=10,<11
 iqm-exa-common>=26,<27
 iqm-pulse>=12,<13
 cirq-core[contrib] ~= 1.2

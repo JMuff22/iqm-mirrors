@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 31.1.0 (2025-09-12)
+===========================
+
+Features
+--------
+
+- Update dependency on station-control-client
+
 Version 31.0.0 (2025-09-11)
 ===========================
 
