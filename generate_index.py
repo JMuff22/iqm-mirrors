@@ -5,31 +5,56 @@ from packaging.version import parse as parse_version
 
 def generate_html(package_data, output_path):
 	"""Generates an HTML file from a dictionary of packages and versions."""
+	# GitHub repository base URL
+	github_repo_url = "https://github.com/JMuff22/iqm-mirrors"
+
 	html = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Package Documentation</title>
+    <title>IQM Package Documentation</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.6; color: #333; max-width: 1200px; margin: 40px auto; padding: 0 20px;
+        }
         h1, h2 { border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
         .package { margin-bottom: 2em; }
-        .versions-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
-        .versions-list li a { text-decoration: none; background-color: #f6f8fa; color: #24292e; padding: 5px 10px; border-radius: 6px; border: 1px solid #d1d5da; display: inline-block; }
-        .versions-list li a:hover { background-color: #f0f2f4; border-color: #c9d1d9; }
-        .latest a { font-weight: bold; border-color: #0366d6; background-color: #ddf4ff; }
+        .versions-grid { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+        .version-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            min-width: 80px; text-align: center;
+        }
+        .version-link {
+            text-decoration: none; background-color: #f6f8fa; color: #24292e;
+            padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5da;
+            font-weight: 500; display: block; width: 100%; box-sizing: border-box;
+        }
+        .version-link:hover { background-color: #f0f2f4; border-color: #c9d1d9; }
+        .latest .version-link { font-weight: bold; border-color: #0366d6; background-color: #ddf4ff; }
+        .source-link {
+            text-decoration: none; color: #586069; font-size: 0.8em; padding: 2px 6px;
+            border: 1px solid #d1d5da; border-radius: 3px; background-color: #fafbfc;
+            white-space: nowrap;
+        }
+        .source-link:hover { color: #24292e; background-color: #f3f4f6; }
+        .source-link::before { content: "📁 "; }
+        @media (max-width: 768px) {
+            .versions-grid { flex-direction: column; }
+            .version-item { min-width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <h1>Package Documentation</h1>
+    <h1>IQM Package Documentation</h1>
 """
 
 	for package, versions in sorted(package_data.items()):
-		html += f'    <div class="package">\n'
+		html += '    <div class="package">\n'
 		html += f"        <h2>{package}</h2>\n"
-		html += '        <ul class="versions-list">\n'
+		html += '        <div class="versions-grid">\n'
 
 		has_latest = "latest" in versions
 		# Sort versions correctly, putting 'latest' first if it exists
@@ -54,11 +79,27 @@ def generate_html(package_data, output_path):
 
 		for version in sorted_versions:
 			version_class = "latest" if version == "latest" else ""
-			html += (
-				f'            <li class="{version_class}"><a href="{package}/{version}/index.html">{version}</a></li>\n'
-			)
 
-		html += "        </ul>\n"
+			# Generate source code link
+			if version == "latest":
+				source_url = f"{github_repo_url}/tree/main/{package}"
+			else:
+				# For versioned builds, link to the git tag
+				# Convert version like "v31.0.0" to tag like "iqm-client/v31.0.0"
+				clean_version = version if version.startswith("v") else f"v{version}"
+				tag_name = f"{package}/{clean_version}"
+				source_url = f"{github_repo_url}/tree/{tag_name}/{package}"
+
+			html += f'            <div class="version-item {version_class}">\n'
+			html += f'                <a href="{package}/{version}/index.html" class="version-link">{version}</a>\n'
+			source_link_html = (
+				f'                <a href="{source_url}" class="source-link" target="_blank" '
+				f'title="View source code">source</a>\n'
+			)
+			html += source_link_html
+			html += "            </div>\n"
+
+		html += "        </div>\n"
 		html += "    </div>\n"
 
 	html += """
