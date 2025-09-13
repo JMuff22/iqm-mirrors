@@ -4,8 +4,8 @@ name: Update PyPI Package Mirrors
 
 on:
   # 1. Run on a schedule (e.g., once a day at midnight UTC)
-  schedule:
-    - cron: "0 0 * * *"
+  # schedule:
+  #   - cron: "0 0 * * *"
 
   # 2. Allow the workflow to be triggered manually from the Actions tab
   workflow_dispatch: {}
