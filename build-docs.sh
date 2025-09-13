@@ -89,5 +89,6 @@ find "${BUILD_OUTPUT_DIR}" -type d -name ".doctrees" -exec rm -rf {} + 2>/dev/nu
 find "${BUILD_OUTPUT_DIR}" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 touch "${BUILD_OUTPUT_DIR}/.nojekyll"
+touch _site/.nojekyll
 
 echo "--- Successfully built docs for ${BASE_PACKAGE_NAME} version ${VERSION} ---"
