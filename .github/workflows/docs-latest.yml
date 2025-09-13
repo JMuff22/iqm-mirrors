@@ -6,6 +6,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'packages.txt'
+      - 'requirements-docs.txt'
+      - 'build-docs.sh'
+      - 'generate_index.py'
+      - 'intersphinx_mappings.py'
+      - 'iqm-*/**'
   
   # Allow manual triggering with option to rebuild all
   workflow_dispatch:
