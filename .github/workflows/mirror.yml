@@ -53,3 +53,29 @@ jobs:
         run: |
           git push origin main
           git push origin --tags
+
+      - name: Check for updated packages
+        id: check_updates
+        run: |
+          if [ -f updated_packages.txt ]; then
+            UPDATED_PACKAGES=$(cat updated_packages.txt)
+            echo "updated_packages=$UPDATED_PACKAGES" >> $GITHUB_OUTPUT
+            if [ -n "$UPDATED_PACKAGES" ]; then
+              echo "has_updates=true" >> $GITHUB_OUTPUT
+              echo "Updated packages: $UPDATED_PACKAGES"
+            else
+              echo "has_updates=false" >> $GITHUB_OUTPUT
+              echo "No packages were updated"
+            fi
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+            echo "No updated_packages.txt file found"
+          fi
+
+      - name: Trigger documentation build
+        if: steps.check_updates.outputs.has_updates == 'true'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: mirror-updated
+          client-payload: '{"updated_packages": "${{ steps.check_updates.outputs.updated_packages }}"}'

@@ -14,6 +14,10 @@ on:
       - 'intersphinx_mappings.py'
       - 'iqm-*/**'
   
+  # Listen for repository dispatch events from mirror workflow
+  repository_dispatch:
+    types: [mirror-updated]
+  
   # Allow manual triggering with option to rebuild all
   workflow_dispatch:
     inputs:
@@ -55,23 +59,38 @@ jobs:
 
       - name: Build documentation for all packages
         run: |
-          # Check if this is triggered by packages.txt change or manual push
+          # Check if this is triggered by packages.txt change, manual push, or repository dispatch
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
           
           echo "Changed files: $CHANGED_FILES"
+          echo "Event name: ${{ github.event_name }}"
           
           if [[ "$CHANGED_FILES" == *"packages.txt"* ]]; then
             echo "packages.txt changed - rebuilding all packages"
             BUILD_ALL=true
+            UPDATED_PACKAGES=""
           elif [[ "${{ github.event.inputs.rebuild_all }}" == "true" ]]; then
             echo "Manual rebuild requested - rebuilding all packages"
             BUILD_ALL=true
+            UPDATED_PACKAGES=""
+          elif [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            # Check if specific packages were updated
+            UPDATED_PACKAGES="${{ github.event.client_payload.updated_packages }}"
+            if [[ -n "$UPDATED_PACKAGES" ]]; then
+              echo "Repository dispatch with updated packages: $UPDATED_PACKAGES"
+              BUILD_ALL=false
+            else
+              echo "Repository dispatch - rebuilding all packages"
+              BUILD_ALL=true
+            fi
           elif [[ -z "$CHANGED_FILES" ]]; then
             echo "No previous commit found (probably initial commit) - rebuilding all packages"
             BUILD_ALL=true
+            UPDATED_PACKAGES=""
           else
             echo "No packages.txt changes - checking for package-specific changes"
             BUILD_ALL=false
+            UPDATED_PACKAGES=""
           fi
           
           while IFS= read -r line || [[ -n "$line" ]]; do
@@ -97,6 +116,12 @@ jobs:
             SHOULD_BUILD=false
             if [ "$BUILD_ALL" = true ]; then
               SHOULD_BUILD=true
+            elif [[ -n "$UPDATED_PACKAGES" ]]; then
+              # Check if this package is in the updated packages list
+              if [[ ",$UPDATED_PACKAGES," == *",$base_name,"* ]]; then
+                echo "Package $base_name was updated by mirror - rebuilding"
+                SHOULD_BUILD=true
+              fi
             elif [[ "$CHANGED_FILES" == *"$base_name"* ]]; then
               echo "Package $base_name has changes - rebuilding"
               SHOULD_BUILD=true

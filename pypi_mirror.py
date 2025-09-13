@@ -148,7 +148,7 @@ def process_package(monorepo_root, raw_package_name, min_version_str, existing_t
 	data = get_pypi_data(package_name)
 	if not data:
 		print(f"Could not fetch data for {package_name}. Skipping.")
-		return
+		return False
 
 	releases = data.get("releases", {})
 
@@ -166,16 +166,17 @@ def process_package(monorepo_root, raw_package_name, min_version_str, existing_t
 			sorted_versions = filtered_versions
 		except Exception as e:
 			print(f"Error parsing min_version '{min_version_str}': {e}")
-			return
+			return False
 
 	versions_to_process = [v for v in sorted_versions if f"{package_name}/v{v}" not in existing_tags]
 
 	if not versions_to_process:
 		print(f"All versions for '{package_name}' are already mirrored.")
-		return
+		return False
 
 	print(f"Found {len(versions_to_process)} new versions to process for '{package_name}'.")
 
+	updated = False
 	for version in versions_to_process:
 		print(f"\nProcessing {package_name} version: {version}...")
 		release_files = releases[version]
@@ -192,8 +193,10 @@ def process_package(monorepo_root, raw_package_name, min_version_str, existing_t
 			break
 
 		git_commit_and_tag(monorepo_root, package_dir, package_name, version)
+		updated = True
 
 	print(f"\nFinished processing for '{package_name}'.")
+	return updated
 
 
 def main():
@@ -223,10 +226,24 @@ def main():
 	existing_tags = get_existing_tags(monorepo_root)
 	print(f"Found {len(existing_tags)} existing tags.")
 
+	updated_packages = []
 	for package_info in packages_to_mirror:
-		process_package(monorepo_root, package_info["name"], package_info["min_version"], existing_tags)
+		if process_package(monorepo_root, package_info["name"], package_info["min_version"], existing_tags):
+			package_name = re.split(r"[\[]", package_info["name"])[0]
+			updated_packages.append(package_name)
 
 	print("\n\nMirroring process complete for all packages in config file!")
+	
+	if updated_packages:
+		print(f"Updated packages: {','.join(updated_packages)}")
+		# Write updated packages to a file for the GitHub Actions workflow
+		with open("updated_packages.txt", "w") as f:
+			f.write(','.join(updated_packages))
+	else:
+		print("No packages were updated.")
+		# Create empty file to indicate no updates
+		with open("updated_packages.txt", "w") as f:
+			f.write("")
 
 
 if __name__ == "__main__":
