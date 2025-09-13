@@ -161,7 +161,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../examples/example_clops.html">Circuit Layer Operations Per Second (CLOPS)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../examples/example_ghz.html">Greenberger–Horne–Zeilinger (GHZ) State Fidelity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../examples/example_qscore.html">Q-Score</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/example_coherence.html">Coherence experiments</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../devices/devices.html">Devices</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -197,10 +196,6 @@
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.circuit_containers.BenchmarkCircuit.html">iqm.benchmarks.circuit_containers.BenchmarkCircuit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.circuit_containers.CircuitGroup.html">iqm.benchmarks.circuit_containers.CircuitGroup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.circuit_containers.Circuits.html">iqm.benchmarks.circuit_containers.Circuits</a></li>
-</ul>
-</details></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="iqm.benchmarks.coherence.html">iqm.benchmarks.coherence</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.coherence.coherence.html">iqm.benchmarks.coherence.coherence</a></li>
 </ul>
 </details></li>
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="iqm.benchmarks.compressive_gst.html">iqm.benchmarks.compressive_gst</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -269,7 +264,6 @@
 </ul>
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="iqm.benchmarks.utils_plots.html">iqm.benchmarks.utils_plots</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.calculate_node_radii.html">iqm.benchmarks.utils_plots.calculate_node_radii</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.draw_graph_edges.html">iqm.benchmarks.utils_plots.draw_graph_edges</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.evaluate_hamiltonian_paths.html">iqm.benchmarks.utils_plots.evaluate_hamiltonian_paths</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.plot_layout_fidelity_graph.html">iqm.benchmarks.utils_plots.plot_layout_fidelity_graph</a></li>
@@ -453,7 +447,6 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.convergence_criteria"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.convergence_criteria</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.batch_size"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.batch_size</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.bootstrap_samples"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.bootstrap_samples</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.verbose_level"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.verbose_level</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.parallel_execution</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.model_config"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.model_config</span></code></a></li>
 </ul>
@@ -473,7 +466,7 @@
 <h1>iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration<a class="headerlink" href="#iqm-benchmarks-compressive-gst-compressive-gst-gstconfiguration" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">iqm.benchmarks.compressive_gst.compressive_gst.</span></span><span class="sig-name descname"><span class="pre">GSTConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">benchmark:</span> <span class="pre">~typing.Type[~iqm.benchmarks.benchmark_definition.Benchmark]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'iqm.benchmarks.compressive_gst.compressive_gst.CompressiveGST'&gt;,</span> <span class="pre">shots:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1024,</span> <span class="pre">max_gates_per_batch:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">max_circuits_per_batch:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">calset_id:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">routing_method:</span> <span class="pre">~typing.Literal['basic',</span> <span class="pre">'lookahead',</span> <span class="pre">'stochastic',</span> <span class="pre">'sabre',</span> <span class="pre">'none']</span> <span class="pre">=</span> <span class="pre">'sabre',</span> <span class="pre">physical_layout:</span> <span class="pre">~typing.Literal['fixed',</span> <span class="pre">'batching']</span> <span class="pre">=</span> <span class="pre">'fixed',</span> <span class="pre">use_dd:</span> <span class="pre">bool</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">dd_strategy:</span> <span class="pre">~iqm.iqm_client.models.DDStrategy</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">qubit_layouts:</span> <span class="pre">~typing.List[int]</span> <span class="pre">|</span> <span class="pre">~typing.List[~typing.List[int]],</span> <span class="pre">gate_set:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.List[~typing.Any],</span> <span class="pre">gate_context:</span> <span class="pre">~typing.Any</span> <span class="pre">|</span> <span class="pre">~typing.List[~typing.Any]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">num_circuits:</span> <span class="pre">int,</span> <span class="pre">rank:</span> <span class="pre">int,</span> <span class="pre">gate_labels:</span> <span class="pre">~typing.List</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">seq_len_list:</span> <span class="pre">list[int]</span> <span class="pre">=</span> <span class="pre">[1,</span> <span class="pre">8,</span> <span class="pre">14],</span> <span class="pre">from_init:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">max_inits:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">20,</span> <span class="pre">opt_method:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'auto',</span> <span class="pre">max_iterations:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.List[int]</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">'auto',</span> <span class="pre">convergence_criteria:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.List[float]</span> <span class="pre">=</span> <span class="pre">[4,</span> <span class="pre">1e-05],</span> <span class="pre">batch_size:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">'auto',</span> <span class="pre">bootstrap_samples:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">verbose_level:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">parallel_execution:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">iqm.benchmarks.compressive_gst.compressive_gst.</span></span><span class="sig-name descname"><span class="pre">GSTConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">benchmark:</span> <span class="pre">~typing.Type[~iqm.benchmarks.benchmark_definition.Benchmark]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'iqm.benchmarks.compressive_gst.compressive_gst.CompressiveGST'&gt;,</span> <span class="pre">shots:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1024,</span> <span class="pre">max_gates_per_batch:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">max_circuits_per_batch:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">calset_id:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">routing_method:</span> <span class="pre">~typing.Literal['basic',</span> <span class="pre">'lookahead',</span> <span class="pre">'stochastic',</span> <span class="pre">'sabre',</span> <span class="pre">'none']</span> <span class="pre">=</span> <span class="pre">'sabre',</span> <span class="pre">physical_layout:</span> <span class="pre">~typing.Literal['fixed',</span> <span class="pre">'batching']</span> <span class="pre">=</span> <span class="pre">'fixed',</span> <span class="pre">use_dd:</span> <span class="pre">bool</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">dd_strategy:</span> <span class="pre">~iqm.iqm_client.models.DDStrategy</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">qubit_layouts:</span> <span class="pre">~typing.List[int]</span> <span class="pre">|</span> <span class="pre">~typing.List[~typing.List[int]],</span> <span class="pre">gate_set:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.List[~typing.Any],</span> <span class="pre">num_circuits:</span> <span class="pre">int,</span> <span class="pre">rank:</span> <span class="pre">int,</span> <span class="pre">gate_labels:</span> <span class="pre">~typing.List</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">seq_len_list:</span> <span class="pre">list[int]</span> <span class="pre">=</span> <span class="pre">[1,</span> <span class="pre">8,</span> <span class="pre">14],</span> <span class="pre">from_init:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">max_inits:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">20,</span> <span class="pre">opt_method:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'auto',</span> <span class="pre">max_iterations:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.List[int]</span> <span class="pre">=</span> <span class="pre">'auto',</span> <span class="pre">convergence_criteria:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~typing.List[float]</span> <span class="pre">=</span> <span class="pre">[4,</span> <span class="pre">0.0001],</span> <span class="pre">batch_size:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">'auto',</span> <span class="pre">bootstrap_samples:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">testing:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">parallel_execution:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="iqm.benchmarks.benchmark.BenchmarkConfigurationBase.html#iqm.benchmarks.benchmark.BenchmarkConfigurationBase" title="iqm.benchmarks.benchmark.BenchmarkConfigurationBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">BenchmarkConfigurationBase</span></code></a></p>
 <p>Compressive GST configuration base.</p>
 <dl class="field-list simple">
@@ -487,10 +480,9 @@
 <li><p><strong>routing_method</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.Literal" title="(in Python v3.11)"><em>Literal</em></a><em>[</em><em>'basic'</em><em>, </em><em>'lookahead'</em><em>, </em><em>'stochastic'</em><em>, </em><em>'sabre'</em><em>, </em><em>'none'</em><em>]</em>) – </p></li>
 <li><p><strong>physical_layout</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.Literal" title="(in Python v3.11)"><em>Literal</em></a><em>[</em><em>'fixed'</em><em>, </em><em>'batching'</em><em>]</em>) – </p></li>
 <li><p><strong>use_dd</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>dd_strategy</strong> (<a class="reference external" href="https://docs.meetiqm.com/iqm-client/#qiskit/api/iqm.iqm_client.models.DDStrategy.html#iqm.iqm_client.models.DDStrategy" title="(in IQM client v29.14.0)"><em>DDStrategy</em></a><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>dd_strategy</strong> (<em>DDStrategy</em><em> | </em><em>None</em>) – </p></li>
 <li><p><strong>qubit_layouts</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em><em>]</em>) – </p></li>
 <li><p><strong>gate_set</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.Any" title="(in Python v3.11)"><em>Any</em></a><em>]</em>) – </p></li>
-<li><p><strong>gate_context</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.Any" title="(in Python v3.11)"><em>Any</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.Any" title="(in Python v3.11)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>) – </p></li>
 <li><p><strong>num_circuits</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
 <li><p><strong>rank</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
 <li><p><strong>gate_labels</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em> | </em><em>None</em>) – </p></li>
@@ -498,11 +490,11 @@
 <li><p><strong>from_init</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – </p></li>
 <li><p><strong>max_inits</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
 <li><p><strong>opt_method</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
-<li><p><strong>max_iterations</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
+<li><p><strong>max_iterations</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – </p></li>
 <li><p><strong>convergence_criteria</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.11/library/typing.html#typing.List" title="(in Python v3.11)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – </p></li>
 <li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
 <li><p><strong>bootstrap_samples</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
-<li><p><strong>verbose_level</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
+<li><p><strong>testing</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – </p></li>
 <li><p><strong>parallel_execution</strong> (<a class="reference external" href="https://docs.python.org/3.11/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – </p></li>
 </ul>
 </dd>
@@ -707,18 +699,6 @@ the uncertainty via bootstrapping.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.verbose_level">
-<span class="sig-name descname"><span class="pre">verbose_level</span></span><a class="headerlink" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.verbose_level" title="Link to this definition">#</a></dt>
-<dd><p>The level of verbosity of the output. 0 is minimal, 1 gives optimization updates, 2 outputs optimization plots
-* Default: 1</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.11/library/functions.html#int" title="(in Python v3.11)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution">
 <span class="sig-name descname"><span class="pre">parallel_execution</span></span><a class="headerlink" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution" title="Link to this definition">#</a></dt>
 <dd><p>Whether to run the circuits for all layouts in parallel on the backend.</p>
@@ -744,70 +724,67 @@ the uncertainty via bootstrapping.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.gate_set" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.gate_set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gate_set</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gate_context</span></code></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.num_circuits" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.num_circuits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_circuits</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.num_circuits" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.num_circuits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_circuits</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.rank" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.rank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rank</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.rank" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.rank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rank</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.shots" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.shots"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shots</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.shots" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.shots"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shots</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.gate_labels" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.gate_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gate_labels</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.gate_labels" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.gate_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gate_labels</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.seq_len_list" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.seq_len_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">seq_len_list</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.seq_len_list" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.seq_len_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">seq_len_list</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.from_init" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.from_init"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_init</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.from_init" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.from_init"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_init</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_inits" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_inits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_inits</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_inits" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_inits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_inits</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.opt_method" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.opt_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opt_method</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.opt_method" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.opt_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opt_method</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_iterations" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_iterations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_iterations</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_iterations" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.max_iterations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_iterations</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.convergence_criteria" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.convergence_criteria"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convergence_criteria</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.convergence_criteria" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.convergence_criteria"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convergence_criteria</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.batch_size" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.batch_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_size</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.batch_size" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.batch_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_size</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.bootstrap_samples" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.bootstrap_samples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bootstrap_samples</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.bootstrap_samples" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.bootstrap_samples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bootstrap_samples</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">testing</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.verbose_level" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.verbose_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">verbose_level</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parallel_execution</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution" title="iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parallel_execution</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_gates_per_batch</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_gates_per_batch</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_circuits_per_batch</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_circuits_per_batch</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">calset_id</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">calset_id</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">routing_method</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">routing_method</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_layout</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_layout</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_dd</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_dd</span></code></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dd_strategy</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dd_strategy</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -891,7 +868,6 @@ the uncertainty via bootstrapping.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.convergence_criteria"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.convergence_criteria</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.batch_size"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.batch_size</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.bootstrap_samples"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.bootstrap_samples</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.verbose_level"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.verbose_level</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.parallel_execution"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.parallel_execution</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#iqm.benchmarks.compressive_gst.compressive_gst.GSTConfiguration.model_config"><code class="docutils literal notranslate"><span class="pre">GSTConfiguration.model_config</span></code></a></li>
 </ul>
