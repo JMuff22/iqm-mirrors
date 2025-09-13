@@ -21,7 +21,7 @@ if [ ! -d "$DOCS_SOURCE_DIR" ] || [ ! -f "${DOCS_SOURCE_DIR}/conf.py" ]; then
   exit 0
 fi
 
-echo "--- Building docs for ${BASE_PACKAGE_NAME} version ${VERSION} ---"
+echo "Found documentation source at: ${DOCS_SOURCE_DIR}"
 
 # Create a temporary copy of conf.py to avoid modifying the original
 TEMP_CONF="${DOCS_SOURCE_DIR}/conf_temp.py"
@@ -34,13 +34,48 @@ cat intersphinx_mappings.py >> "$TEMP_CONF"
 mv "${DOCS_SOURCE_DIR}/conf.py" "${DOCS_SOURCE_DIR}/conf_original.py"
 mv "$TEMP_CONF" "${DOCS_SOURCE_DIR}/conf.py"
 
-# Cleanup function to restore original conf.py even if script fails
-cleanup() {
-  if [ -f "${DOCS_SOURCE_DIR}/conf_original.py" ]; then
-    mv "${DOCS_SOURCE_DIR}/conf_original.py" "${DOCS_SOURCE_DIR}/conf.py"
+echo "✓ Documentation configuration prepared"
+
+echo "--- Building docs for ${BASE_PACKAGE_NAME} version ${VERSION} ---"
+
+# For versioned builds, checkout the specific git tag to get the right source code
+if [ "$VERSION" != "latest" ]; then
+  CLEAN_VERSION="${VERSION#v}"
+  TAG_NAME="${BASE_PACKAGE_NAME}/v${CLEAN_VERSION}"
+  
+  echo "Checking out git tag: ${TAG_NAME}"
+  if git rev-parse --verify "${TAG_NAME}" >/dev/null 2>&1; then
+    # Create a temporary directory for the specific version
+    TEMP_DIR=$(mktemp -d)
+    echo "Creating temporary checkout at: ${TEMP_DIR}"
+    
+    # Clone the current repo to temp directory and checkout the specific tag
+    git clone . "${TEMP_DIR}" --quiet
+    (cd "${TEMP_DIR}" && git checkout "${TAG_NAME}" --quiet)
+    
+    # Update the docs source directory to point to the tagged version
+    DOCS_SOURCE_DIR="${TEMP_DIR}/${BASE_PACKAGE_NAME}/docs"
+    
+    # Add cleanup for temp directory
+    cleanup() {
+      if [ -f "${DOCS_SOURCE_DIR}/conf_original.py" ]; then
+        mv "${DOCS_SOURCE_DIR}/conf_original.py" "${DOCS_SOURCE_DIR}/conf.py"
+      fi
+      if [ -d "${TEMP_DIR}" ]; then
+        rm -rf "${TEMP_DIR}"
+      fi
+    }
+    trap cleanup EXIT
+    
+    echo "✓ Successfully checked out ${TAG_NAME}"
+  else
+    echo "WARNING: Git tag ${TAG_NAME} not found. Using current source code (may not match installed version)."
   fi
-}
-trap cleanup EXIT
+else
+  echo "Building latest version - using current source code"
+fi
+
+
 
 echo "Installing from spec: '${FULL_PACKAGE_SPEC}' version ${VERSION}"
 
@@ -67,16 +102,71 @@ if [ "$VERSION" != "latest" ]; then
     echo "Installing versioned package: ${VERSIONED_SPEC}"
     uv pip install "${VERSIONED_SPEC}"
   fi
+  
+  # Verify the installed version matches what we expected
+  echo "Verifying installed version..."
+  
+  # All IQM packages are under the iqm namespace
+  # Convert package name: iqm-client -> iqm_client, iqm-pulse -> pulse, etc.
+  if [[ "$BASE_PACKAGE_NAME" == "iqm-client" ]]; then
+    MODULE_NAME="iqm_client"
+  else
+    # For other iqm packages, remove 'iqm-' prefix
+    MODULE_NAME="${BASE_PACKAGE_NAME#iqm-}"
+    MODULE_NAME="${MODULE_NAME//-/_}"  # Replace any remaining hyphens with underscores
+  fi
+  
+  INSTALLED_VERSION=$(python -c "from iqm import ${MODULE_NAME}; print(${MODULE_NAME}.__version__)" 2>/dev/null || echo "unknown")
+  echo "Expected version: ${CLEAN_VERSION}"
+  echo "Installed version: ${INSTALLED_VERSION}"
+  echo "Module checked: iqm.${MODULE_NAME}"
+  
+  if [ "$INSTALLED_VERSION" != "$CLEAN_VERSION" ] && [ "$INSTALLED_VERSION" != "unknown" ]; then
+    echo "WARNING: Version mismatch! Expected ${CLEAN_VERSION} but got ${INSTALLED_VERSION}"
+    echo "This might indicate a problem with the package installation or version specification."
+    # Don't exit here - continue with documentation build but log the issue
+  elif [ "$INSTALLED_VERSION" == "unknown" ]; then
+    echo "WARNING: Could not determine installed version. Package might not be properly installed."
+    echo "Attempting to list what was actually installed..."
+    uv pip show "${BASE_PACKAGE_NAME}" || echo "Package not found in pip list"
+  else
+    echo "✓ Version verification successful"
+  fi
+  
 else
   # For latest builds, install the latest version
   echo "Installing latest version: ${FULL_PACKAGE_SPEC}"
   uv pip install "${FULL_PACKAGE_SPEC}"
+  
+  # Show what version was installed for latest builds
+  echo "Verifying installed version for latest build..."
+  
+  # Use same module naming logic as versioned builds
+  if [[ "$BASE_PACKAGE_NAME" == "iqm-client" ]]; then
+    MODULE_NAME="iqm_client"
+  else
+    MODULE_NAME="${BASE_PACKAGE_NAME#iqm-}"
+    MODULE_NAME="${MODULE_NAME//-/_}"
+  fi
+  
+  INSTALLED_VERSION=$(python -c "from iqm import ${MODULE_NAME}; print(${MODULE_NAME}.__version__)" 2>/dev/null || echo "unknown")
+  echo "Installed latest version: ${INSTALLED_VERSION}"
+  echo "Module checked: iqm.${MODULE_NAME}"
 fi
 
 if [ -f "${DOCS_SOURCE_DIR}/requirements.txt" ]; then
   echo "Installing documentation-specific requirements..."
   uv pip install -r "requirements-docs.txt"
 fi
+
+# Show all installed packages for debugging
+echo "=== Installed packages (for debugging) ==="
+echo "Target package and related:"
+uv pip list | grep -i "iqm\|sphinx\|furo" || echo "No matching packages found"
+echo ""
+echo "Specific package details:"
+uv pip show "$BASE_PACKAGE_NAME" 2>/dev/null || echo "Package $BASE_PACKAGE_NAME not found in pip show"
+echo "==========================================="
 
 echo "Running Sphinx..."
 python -m sphinx -b html -j auto "${DOCS_SOURCE_DIR}" "${BUILD_OUTPUT_DIR}"
