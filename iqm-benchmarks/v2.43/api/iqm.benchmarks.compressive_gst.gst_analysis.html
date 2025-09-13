@@ -269,7 +269,6 @@
 </ul>
 </details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="iqm.benchmarks.utils_plots.html">iqm.benchmarks.utils_plots</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.calculate_node_radii.html">iqm.benchmarks.utils_plots.calculate_node_radii</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.draw_graph_edges.html">iqm.benchmarks.utils_plots.draw_graph_edges</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.evaluate_hamiltonian_paths.html">iqm.benchmarks.utils_plots.evaluate_hamiltonian_paths</a></li>
 <li class="toctree-l4"><a class="reference internal" href="iqm.benchmarks.utils_plots.plot_layout_fidelity_graph.html">iqm.benchmarks.utils_plots.plot_layout_fidelity_graph</a></li>
@@ -448,17 +447,23 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.bootstrap_errors.html#iqm.benchmarks.compressive_gst.gst_analysis.bootstrap_errors" title="iqm.benchmarks.compressive_gst.gst_analysis.bootstrap_errors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bootstrap_errors</span></code></a>(dataset, y, K, X, E, rho, ...)</p></td>
 <td><p>Resamples circuit outcomes a number of times and computes GST estimates for each repetition All results are then returned in order to compute bootstrap-error bars for GST estimates.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.dataset_counts_to_mgst_format.html#iqm.benchmarks.compressive_gst.gst_analysis.dataset_counts_to_mgst_format" title="iqm.benchmarks.compressive_gst.gst_analysis.dataset_counts_to_mgst_format"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataset_counts_to_mgst_format</span></code></a>(dataset, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.dataframe_to_figure.html#iqm.benchmarks.compressive_gst.gst_analysis.dataframe_to_figure" title="iqm.benchmarks.compressive_gst.gst_analysis.dataframe_to_figure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataframe_to_figure</span></code></a>(df[, row_labels, ...])</p></td>
+<td><p>Turns a pandas DataFrame into a figure This is needed to conform with the standard file saving routine of QCVV.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.dataset_counts_to_mgst_format.html#iqm.benchmarks.compressive_gst.gst_analysis.dataset_counts_to_mgst_format" title="iqm.benchmarks.compressive_gst.gst_analysis.dataset_counts_to_mgst_format"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataset_counts_to_mgst_format</span></code></a>(dataset, ...)</p></td>
 <td><p>Turns the dictionary of outcomes obtained from qiskit backend</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.generate_gate_results.html#iqm.benchmarks.compressive_gst.gst_analysis.generate_gate_results" title="iqm.benchmarks.compressive_gst.gst_analysis.generate_gate_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_gate_results</span></code></a>(dataset, qubit_layout, ...)</p></td>
-<td><p>Produces all result tables for arbitrary Kraus rank estimates</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.generate_basis_labels.html#iqm.benchmarks.compressive_gst.gst_analysis.generate_basis_labels" title="iqm.benchmarks.compressive_gst.gst_analysis.generate_basis_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_basis_labels</span></code></a>(pdim[, basis])</p></td>
+<td><p>Generate a list of labels for the Pauli basis or the standard basis</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.generate_non_gate_results.html#iqm.benchmarks.compressive_gst.gst_analysis.generate_non_gate_results" title="iqm.benchmarks.compressive_gst.gst_analysis.generate_non_gate_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_non_gate_results</span></code></a>(df_o[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.generate_gate_results.html#iqm.benchmarks.compressive_gst.gst_analysis.generate_gate_results" title="iqm.benchmarks.compressive_gst.gst_analysis.generate_gate_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_gate_results</span></code></a>(dataset, qubit_layout, ...)</p></td>
+<td><p>Produces all result tables for arbitrary Kraus rank estimates and turns them into figures.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.generate_non_gate_results.html#iqm.benchmarks.compressive_gst.gst_analysis.generate_non_gate_results" title="iqm.benchmarks.compressive_gst.gst_analysis.generate_non_gate_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_non_gate_results</span></code></a>(dataset, ...)</p></td>
 <td><p>Creates error bars (if bootstrapping was used) and formats results for non-gate errors.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.generate_unit_rank_gate_results.html#iqm.benchmarks.compressive_gst.gst_analysis.generate_unit_rank_gate_results" title="iqm.benchmarks.compressive_gst.gst_analysis.generate_unit_rank_gate_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_unit_rank_gate_results</span></code></a>(dataset, ...)</p></td>
-<td><p>Produces all result tables for Kraus rank 1 estimates</p></td>
+<td><p>Produces all result tables for Kraus rank 1 estimates and turns them into figures.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.mgst_analysis.html#iqm.benchmarks.compressive_gst.gst_analysis.mgst_analysis" title="iqm.benchmarks.compressive_gst.gst_analysis.mgst_analysis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mgst_analysis</span></code></a>(run)</p></td>
 <td><p>Analysis function for compressive GST</p></td>
@@ -466,14 +471,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.pandas_results_to_observations.html#iqm.benchmarks.compressive_gst.gst_analysis.pandas_results_to_observations" title="iqm.benchmarks.compressive_gst.gst_analysis.pandas_results_to_observations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas_results_to_observations</span></code></a>(dataset, ...)</p></td>
 <td><p>Converts high level GST results from a pandas Dataframe to a simple observation dictionary</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.process_bootstrap_samples.html#iqm.benchmarks.compressive_gst.gst_analysis.process_bootstrap_samples" title="iqm.benchmarks.compressive_gst.gst_analysis.process_bootstrap_samples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_bootstrap_samples</span></code></a>(y_sampled, attrs, ...)</p></td>
-<td><p>Process a single bootstrap sample for Gate Set Tomography.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.process_layout.html#iqm.benchmarks.compressive_gst.gst_analysis.process_layout" title="iqm.benchmarks.compressive_gst.gst_analysis.process_layout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_layout</span></code></a>(args)</p></td>
-<td><p>Process a single qubit layout for Gate Set Tomography analysis.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.process_plots.html#iqm.benchmarks.compressive_gst.gst_analysis.process_plots" title="iqm.benchmarks.compressive_gst.gst_analysis.process_plots"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_plots</span></code></a>(dataset, qubit_layout, ...)</p></td>
-<td><p>Process and generate all plots for a single qubit layout.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.result_str_to_floats.html#iqm.benchmarks.compressive_gst.gst_analysis.result_str_to_floats" title="iqm.benchmarks.compressive_gst.gst_analysis.result_str_to_floats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">result_str_to_floats</span></code></a>(result_str, err)</p></td>
+<td><p>Converts formated string results from mgst to float (value, uncertainty) pairs</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="iqm.benchmarks.compressive_gst.gst_analysis.run_mGST_wrapper.html#iqm.benchmarks.compressive_gst.gst_analysis.run_mGST_wrapper" title="iqm.benchmarks.compressive_gst.gst_analysis.run_mGST_wrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_mGST_wrapper</span></code></a>(dataset, y)</p></td>
 <td><p>Wrapper function for mGST algorithm execution which prepares an initialization and sets the alg.</p></td>
