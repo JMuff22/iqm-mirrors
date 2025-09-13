@@ -84,6 +84,13 @@ def main():
 	for package_name in os.listdir(site_dir):
 		package_path = os.path.join(site_dir, package_name)
 		if os.path.isdir(package_path):
+			# Skip non-package directories
+			if package_name in [".git", "main-branch", ".github", "node_modules", "__pycache__"]:
+				continue
+			# Skip hidden directories and files
+			if package_name.startswith('.'):
+				continue
+			
 			versions = []
 			for version_name in os.listdir(package_path):
 				if os.path.isdir(os.path.join(package_path, version_name)):
