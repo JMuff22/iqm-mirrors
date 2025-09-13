@@ -233,12 +233,12 @@ def main():
 			updated_packages.append(package_name)
 
 	print("\n\nMirroring process complete for all packages in config file!")
-	
+
 	if updated_packages:
 		print(f"Updated packages: {','.join(updated_packages)}")
 		# Write updated packages to a file for the GitHub Actions workflow
 		with open("updated_packages.txt", "w") as f:
-			f.write(','.join(updated_packages))
+			f.write(",".join(updated_packages))
 	else:
 		print("No packages were updated.")
 		# Create empty file to indicate no updates
