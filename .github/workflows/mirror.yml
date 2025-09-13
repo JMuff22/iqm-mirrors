@@ -44,7 +44,10 @@ jobs:
           uv pip install requests packaging
 
       - name: Run PyPI Mirror Script
-        run: python pypi_mirror.py packages.txt .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          python pypi_mirror.py packages.txt .
 
       - name: Push changes and tags
         run: |

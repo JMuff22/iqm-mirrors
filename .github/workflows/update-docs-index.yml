@@ -10,6 +10,10 @@ on:
   # Allow manual trigger
   workflow_dispatch:
 
+concurrency:
+  group: update-docs-index
+  cancel-in-progress: false
+
 jobs:
   update-index:
     runs-on: ubuntu-latest
@@ -46,6 +50,8 @@ jobs:
           cp main-branch/generate_index.py .
           python generate_index.py .
           rm -rf main-branch
+          # Clean up the script file so it doesn't get committed
+          rm generate_index.py
 
       - name: Commit and push updated index
         run: |

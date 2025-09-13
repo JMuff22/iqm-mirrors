@@ -72,10 +72,6 @@ def git_commit_and_tag(repo_dir, package_dir, package_name, version_str):
 	"""Commits changes in a specific package directory and creates a tag."""
 	print(f"Creating Git commit and tag for {package_name} version {version_str}...")
 
-	# Use standard GitHub Actions bot user
-	# subprocess.run(['git', 'config', 'user.name', 'github-actions[bot]'], cwd=repo_dir, check=True)
-	# subprocess.run(['git', 'config', 'user.email', 'github-actions[bot]@users.noreply.github.com'], cwd=repo_dir, check=True)
-
 	# Stage changes ONLY from the specific package directory
 	subprocess.run(["git", "add", package_dir], cwd=repo_dir, check=True)
 
