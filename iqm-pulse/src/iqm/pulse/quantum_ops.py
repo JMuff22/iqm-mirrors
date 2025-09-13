@@ -78,8 +78,10 @@ class QuantumOp:
     Each locus component corresponds to a quantum subsystem in the definition of the operation.
     The computational subspace always consists of the lowest two levels of the subsystem.
     Zero means the operation can be applied on any number of locus components."""
-    params: tuple[str, ...] = ()
-    """Names of required operation parameters, if any."""
+    params: dict[str, tuple[type, ...]] = field(default_factory=dict)
+    """Maps names of required operation parameters to their allowed types."""
+    optional_params: dict[str, tuple[type, ...]] = field(default_factory=dict)
+    """Maps names of optional operation parameters to their allowed types."""
     implementations: dict[str, type[GateImplementation]] = field(default_factory=dict)
     """Maps implementation names to :class:`.GateImplementation` classes that provide them.
     Each such class should describe the implementation in detail in its docstring.
@@ -100,7 +102,8 @@ class QuantumOp:
     """Unitary matrix that represents the effect of this quantum operation in the computational basis, or ``None``
     if the quantum operation is not unitary or the exact unitary is not known.
     The Callable needs to take exactly the arguments given in :attr:`params`, for example if
-    ``params=('angle','phase')``, the function must have signature ``f(angle:float, phase: float) -> np.ndarray``.
+    ``params={'angle': (float,), 'phase': (float,)}``, the function must have signature 
+    ``f(angle: float, phase: float) -> np.ndarray``.
     For operations acting on more than 1 qubit, unitary should be given in the big-endian order, i.e. in the basis
     ``np.kron(first_qubit_basis_ket, second_qubit_basis_ket)``."""
 

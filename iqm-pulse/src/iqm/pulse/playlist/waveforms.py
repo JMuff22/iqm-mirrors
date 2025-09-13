@@ -177,6 +177,50 @@ class PolynomialCosine(Waveform):
 
 
 @dataclass(frozen=True)
+class PiecewiseConstant(Waveform):
+    r"""Piecewise constant waveform.
+
+    The values are assumed to be in the range :math:`[-1, 1]`, and the changepoints are
+    assumed to be in the Nyquist-zone of the duration,
+    i.e. in the range [-`duration`/2, `duration`/2]
+
+    Args:
+        changepoints: Array of the changepoints of the piecewise constant function.
+        values: Array of the values of the piecewise constant function.
+        Must have one more element than ``changepoints``.
+
+    """
+
+    changepoints: np.ndarray
+    values: np.ndarray
+
+    def __post_init__(self):
+        if len(self.values) != len(self.changepoints) + 1:
+            raise ValueError("The number of values must be one more than the number of changepoints.")
+
+    @staticmethod
+    def non_timelike_attributes() -> dict[str, str]:
+        return {
+            "values": "",
+        }
+
+    def _sample(self, sample_coords: np.ndarray) -> np.ndarray:
+        condlist = []
+        # Before first changepoint
+        condlist.append(sample_coords < self.changepoints[0])
+
+        for i in range(len(self.changepoints) - 1):
+            condlist.append((sample_coords >= self.changepoints[i]) & (sample_coords < self.changepoints[i + 1]))
+
+        condlist.append(sample_coords >= self.changepoints[-1])
+
+        funclist = (
+            [self.values[0]] + [self.values[i + 1] for i in range(len(self.changepoints) - 1)] + [self.values[-1]]
+        )
+        return np.piecewise(sample_coords, condlist, funclist)
+
+
+@dataclass(frozen=True)
 class Slepian(Waveform):
     r"""Slepian waveform, which minimizes non-adiabatic errors during a gate.
 
