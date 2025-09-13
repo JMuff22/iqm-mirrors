@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 11.4.0 (2025-09-12)
+===========================
+
+Features
+--------
+
+- Update dependency on exa-common
+
 Version 11.3.0 (2025-09-12)
 ===========================
 
