@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 31.2.0 (2025-09-12)
+===========================
+
+Features
+--------
+
+- Update dependency on exa-common
+
 Version 31.1.0 (2025-09-12)
 ===========================
 

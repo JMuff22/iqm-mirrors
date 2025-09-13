@@ -1,5 +1,5 @@
 iqm-station-control-client>=10,<11
-iqm-exa-common>=26,<27
+iqm-exa-common>=27,<28
 iqm-pulse>=12,<13
 click >= 8.1.6, < 9
 jsonschema >= 4.6.0
