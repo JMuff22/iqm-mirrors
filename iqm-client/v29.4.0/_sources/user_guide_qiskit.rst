@@ -29,7 +29,7 @@ IQM Resonance
    your token, you have the option to regenerate it at any time. However, be aware that regenerating
    your API token will invalidate any previously generated token.
 3. Download one of the demo notebooks from `IQM Academy <https://www.iqmacademy.com/tutorials/>`_ or the
-   `resonance_example.py example file <https://raw.githubusercontent.com/iqm-finland/sdk/refs/heads/main/iqm_client/src/iqm/qiskit_iqm/examples/resonance_example.py>`_
+   `resonance_example.py example file <https://raw.githubusercontent.com/iqm-finland/sdk/main/iqm-client/src/iqm/qiskit_iqm/examples/resonance_example.py>`_
    (Save Page As...)
 4. Install Qiskit on IQM as instructed below.
 5. Add your API token to the example (either as the parameter ``token`` to the :class:`.IQMProvider`
@@ -46,7 +46,7 @@ More ready-to-run examples can also be found at `IQM Academy <https://www.iqmaca
 On-premises device
 ~~~~~~~~~~~~~~~~~~
 
-1. Download the `bell_measure.py example file <https://raw.githubusercontent.com/iqm-finland/sdk/refs/heads/main/iqm_client/src/iqm/qiskit_iqm/examples/bell_measure.py>`_ (Save Page As...).
+1. Download the `bell_measure.py example file <https://raw.githubusercontent.com/iqm-finland/sdk/main/iqm-client/src/iqm/qiskit_iqm/examples/bell_measure.py>`_ (Save Page As...).
 2. Install Qiskit on IQM as instructed below.
 3. Install IQM Client CLI and log in as instructed in the
    `documentation <https://docs.meetiqm.com/iqm-client/user_guide_cli.html#installing-iqm-client-cli>`__
@@ -92,7 +92,7 @@ If you are using IQM Resonance, you have two options to authenticate:
 1. Set the :envvar:`IQM_TOKEN` environment variable to the API token obtained from the Resonance dashboard.
 2. Pass the ``token`` parameter to :class:`.IQMProvider`. This will be forwarded to
    :class:`~iqm.iqm_client.iqm_client.IQMClient`. For an example, see the `resonance_example.py file
-   <https://raw.githubusercontent.com/iqm-finland/sdk/refs/heads/main/iqm_client/src/iqm/qiskit_iqm/examples/resonance_example.py>`_
+   <https://raw.githubusercontent.com/iqm-finland/sdk/main/iqm-client/src/iqm/qiskit_iqm/examples/resonance_example.py>`_
 
 On-premises devices
 ~~~~~~~~~~~~~~~~~~~
@@ -102,7 +102,10 @@ If the IQM server you are connecting to requires authentication, you may use
 then set the :envvar:`IQM_TOKENS_FILE` environment variable, as instructed, to point to the tokens file.
 See IQM Client CLI's `documentation <https://docs.meetiqm.com/iqm-client/user_guide_cli.html>`__ for details.
 
-You may also authenticate yourself by setting the access token in the the :envvar:`IQM_TOKEN` variable
+You may also authenticate yourself using the :envvar:`IQM_AUTH_SERVER`,
+:envvar:`IQM_AUTH_USERNAME` and :envvar:`IQM_AUTH_PASSWORD` environment variables, or pass them as
+arguments to :class:`.IQMProvider`, however this approach is less secure and considered deprecated.
+
 
 Running quantum circuits on an IQM quantum computer
 ---------------------------------------------------
@@ -153,7 +156,7 @@ circuit(s) are sampled:
     from qiskit import transpile
     from iqm.qiskit_iqm import IQMProvider
 
-    iqm_server_url = "https://demo.qc.iqm.fi"  # Replace this with the correct URL
+    iqm_server_url = "https://demo.qc.iqm.fi/cocos/"  # Replace this with the correct URL
     provider = IQMProvider(iqm_server_url)
     backend = provider.get_backend()
 
@@ -173,15 +176,6 @@ circuit(s) are sampled:
    keyword argument of :meth:`.IQMBackend.run`. See also
    `Inspecting circuits before submitting them for execution`_ for inspecting the actual run request sent for
    execution.
-
-.. note::
-
-    As of ``iqm-client >= 30.1.0``, structured quality metrics and calibration data are available to
-    ``IQMTarget`` for improved transpilation. To import the latest valid quality metric data corresponding
-    to the default calibration set into ``IQMTarget``, set ``use_metrics`` to ``True`` when initializing the 
-    class. For Resonance users, this data is not yet available via the Resonance API, so use the default setting
-    of ``use_metrics`` of ``False``.
-    
 
 You can optionally provide IQMBackend specific options as additional keyword arguments to
 :meth:`.IQMBackend.run`, documented at :meth:`.IQMBackend.create_run_request`.
@@ -583,7 +577,6 @@ mapping that matches the restriction:
 .. code-block:: python
 
     qubit_mapping = {i: backend.index_to_qubit_name(q) for i, q in enumerate(qubits)}
-    # or qubit_mapping = dict(enumerate(qubits))
     job = backend.run(transpiled_circuit, qubit_mapping=qubit_mapping)
 
 
@@ -741,17 +734,9 @@ Results from such executions are random bits. This may be useful when developing
 Qiskit on IQM contains :class:`.IQMFacadeBackend`, which allows to combine the mock remote execution with a local
 noisy quantum circuit simulation. This way you can both validate your integration as well as get an idea of the expected circuit execution results.
 
-To run a circuit this way, use :meth:`IQMProvider.get_backend` with one of the backend names
-``facade_adonis, facade_apollo, facade_aphrodite, facade_deneb`` or ``facade_garnet`` to obtain
-a facade backend.
-``facade_adonis, facade_apollo, facade_aphrodite`` represent typical Crystal 5, Crystal 20 and Crystal 54 architecture QPUs,
-whereas ``facade_deneb`` and  ``facade_garnet`` represent the corresponding IQM Resonance quantum computers
-more specifically.
-
-Note that the provider must be initialized with the URL of a quantum computer with the corresponding
-static quantum architecture (i.e. names of qubits, their connectivity, and the native gateset should match the desired architecture).
-Additionally, the URL should point to a mock server rather than a real quantum computer, as the execution results
-from the server will be discarded and replaced by a simulated result generated by Qiskit Aer.
+To run a circuit this way, use the ``"facade_adonis"`` backend retrieved from the provider. Note that the provider must be
+initialized with the URL of a quantum computer with the equivalent architecture (i.e. names of qubits, their
+connectivity, and the native gateset should match the 5-qubit Adonis architecture).
 
 .. code-block:: python
 
@@ -763,7 +748,7 @@ from the server will be discarded and replaced by a simulated result generated b
     circuit.cx(0, 1)
     circuit.measure_all()
 
-    iqm_server_url = "https://demo.qc.iqm.fi/"  # Replace this with the correct URL
+    iqm_server_url = "https://demo.qc.iqm.fi/cocos/"  # Replace this with the correct URL
     provider = IQMProvider(iqm_server_url)
     backend = provider.get_backend('facade_adonis')
     transpiled_circuit = transpile(circuit, backend=backend)
